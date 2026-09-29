@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { TopBar } from './components/common/TopBar';
 import { BottomNav, NavTab } from './components/common/BottomNav';
+import { HomeView } from './components/home/HomeView';
+import { PitchShell } from './components/common/PitchShell';
 import { ExploreMap } from './components/explore/ExploreMap';
 import { QuestsView } from './components/quests/QuestsView';
 import { CollectionView } from './components/collection/CollectionView';
@@ -11,6 +13,7 @@ import { OnboardingFlow } from './components/onboarding/OnboardingFlow';
 import { VenueDetailModal } from './components/venue/VenueDetailModal';
 import { CheckinSuccessModal } from './components/venue/CheckinSuccessModal';
 import { LevelUpModal } from './components/common/LevelUpModal';
+import { QuestPlayModal } from './components/quests/QuestPlayModal';
 import { PartnerDashboard } from './components/partner/PartnerDashboard';
 import { OfflineIndicator } from './components/pwa/PWAInstallButton';
 
@@ -23,6 +26,7 @@ function MainApp() {
     setActiveCheckinSuccess,
     activeLevelUpModal,
     setActiveLevelUpModal,
+    activePlayingQuest,
     setActivePlayingQuest,
     setActiveInspectCard,
     partnerMode,
@@ -31,23 +35,23 @@ function MainApp() {
     completedQuestIds,
   } = useApp();
 
-  const [activeTab, setActiveTab] = useState<NavTab>('explore');
+  const [activeTab, setActiveTab] = useState<NavTab>('home');
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
 
-  // If user has not onboarded yet, show onboarding
+  // If the user has not onboarded yet, show onboarding
   if (!user.onboarded || showOnboardingModal) {
     return <OnboardingFlow onFinish={() => setShowOnboardingModal(false)} />;
   }
 
-  // Active quests count for badge
-  const uncompletedQuestsCount = quests.filter((q) => !completedQuestIds.includes(q.id)).length;
+  // Open quests badge count
+  const openQuestsCount = quests.filter((q) => !completedQuestIds.includes(q.id)).length;
 
   return (
-    <div className="min-h-screen bg-[#121A15] text-[#FAF8F5] flex flex-col font-['EB_Garamond',Georgia,serif] selection:bg-[#B89758] selection:text-[#121A15]">
+    <div className="h-full overflow-y-auto bg-wall text-ink flex flex-col font-sans">
       {/* Offline Mode Toast */}
       <OfflineIndicator />
 
-      {/* Top Bar (Level, XP, Points, Streak, Install Button) */}
+      {/* Top Bar (profile, level, XP, points, streak) */}
       {partnerMode === 'user' && (
         <TopBar onOpenLevelDetails={() => setActiveTab('profile')} />
       )}
@@ -58,7 +62,10 @@ function MainApp() {
           <PartnerDashboard />
         ) : (
           <>
-            {activeTab === 'explore' && <ExploreMap />}
+            {activeTab === 'home' && <HomeView onNavigate={setActiveTab} />}
+            <div className={activeTab === 'explore' ? 'absolute inset-0' : ''}>
+              {activeTab === 'explore' && <ExploreMap />}
+            </div>
             {activeTab === 'quests' && <QuestsView />}
             {activeTab === 'collection' && <CollectionView />}
             {activeTab === 'rewards' && <RewardsView />}
@@ -69,18 +76,16 @@ function MainApp() {
         )}
       </main>
 
-      {/* Bottom Navigation (5 tabs) */}
+      {/* Bottom Navigation */}
       {partnerMode === 'user' && (
         <BottomNav
           activeTab={activeTab}
-          onSelectTab={(tab) => {
-            setActiveTab(tab);
-          }}
-          activeQuestsCount={uncompletedQuestsCount}
+          onSelectTab={setActiveTab}
+          openQuestsCount={openQuestsCount}
         />
       )}
 
-      {/* Venue Detail Modal */}
+      {/* Venue Detail */}
       {selectedVenue && (
         <VenueDetailModal
           venue={selectedVenue}
@@ -101,12 +106,22 @@ function MainApp() {
         />
       )}
 
-      {/* Check-in / Quest Success Celebration Modal */}
+      {/* Quest player — rendered globally so quests open from the map,
+          venue details, and the check-in success screen. */}
+      {activePlayingQuest && (
+        <QuestPlayModal
+          quest={activePlayingQuest}
+          onClose={() => setActivePlayingQuest(null)}
+        />
+      )}
+
+      {/* Check-in / Quest success celebration */}
       {activeCheckinSuccess && (
         <CheckinSuccessModal
           venue={activeCheckinSuccess.venue}
           pointsEarned={activeCheckinSuccess.pointsEarned}
           newCard={activeCheckinSuccess.newCard}
+          source={activeCheckinSuccess.source}
           onClose={() => setActiveCheckinSuccess(null)}
           onStartQuest={() => {
             const venue = activeCheckinSuccess.venue;
@@ -123,8 +138,8 @@ function MainApp() {
         />
       )}
 
-      {/* Level-Up Fanfare Modal */}
-      {activeLevelUpModal && (
+      {/* Level-Up — waits until the success modal closes so celebrations never stack */}
+      {activeLevelUpModal && !activeCheckinSuccess && (
         <LevelUpModal
           oldLevel={activeLevelUpModal.oldLevel}
           newLevel={activeLevelUpModal.newLevel}
@@ -139,7 +154,9 @@ function MainApp() {
 export default function App() {
   return (
     <AppProvider>
-      <MainApp />
+      <PitchShell>
+        <MainApp />
+      </PitchShell>
     </AppProvider>
   );
 }

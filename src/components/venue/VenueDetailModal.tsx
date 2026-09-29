@@ -1,25 +1,25 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Venue } from '../../types';
+import { Venue, VenueType } from '../../types';
 import {
   X,
   MapPin,
   Clock,
   Sparkles,
   Users,
-  Compass,
+  Navigation,
   QrCode,
   Share2,
   Bookmark,
   CheckCircle2,
   Play,
   Lock,
-  Scroll,
-  BookOpen,
-  Feather,
+  Check,
+  Ticket,
 } from 'lucide-react';
 import { triggerHaptic, sound } from '../../utils/audioAndFx';
 import { QrScannerModal } from './QrScannerModal';
+import { BookingModal } from './BookingModal';
 
 interface VenueDetailModalProps {
   venue: Venue;
@@ -27,6 +27,14 @@ interface VenueDetailModalProps {
   onOpenQuest: (questId: string) => void;
   onInspectCard: (cardId: string) => void;
 }
+
+const TYPE_STYLE: Record<VenueType, { chip: string }> = {
+  Museum: { chip: 'bg-vermilion-soft text-vermilion' },
+  Gallery: { chip: 'bg-teal-soft text-teal' },
+  Library: { chip: 'bg-gold-soft text-[#8A6A10]' },
+  Heritage: { chip: 'bg-teal-soft text-teal' },
+  Garden: { chip: 'bg-gold-soft text-[#8A6A10]' },
+};
 
 export const VenueDetailModal: React.FC<VenueDetailModalProps> = ({
   venue,
@@ -39,12 +47,14 @@ export const VenueDetailModal: React.FC<VenueDetailModalProps> = ({
     collectibles,
     collectedCardIds,
     quests,
+    completedQuestIds,
     getDistanceToVenueMeters,
     checkInVenue,
     teleportToVenue,
   } = useApp();
 
   const [showQrModal, setShowQrModal] = useState(false);
+  const [showBooking, setShowBooking] = useState(false);
   const [saved, setSaved] = useState(false);
 
   const isVisited = visitedVenueIds.includes(venue.id);
@@ -65,121 +75,101 @@ export const VenueDetailModal: React.FC<VenueDetailModalProps> = ({
 
   const handleShare = () => {
     triggerHaptic('light');
-    const shareText = `Examine ${venue.name} in Chronicles of Cantabrigia!`;
+    const shareText = `Check out ${venue.name} on CultureQuest!`;
     if (navigator.share) {
       navigator.share({ title: venue.name, text: shareText, url: window.location.href }).catch(() => {});
     } else {
       navigator.clipboard.writeText(`${venue.name} - ${window.location.href}`);
-      alert('Archival link copied to clipboard');
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/85 backdrop-blur-md p-0 sm:p-4 animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md max-h-[92vh] flex flex-col bg-[#121A15] border-2 border-[#B89758] rounded-t-[32px] sm:rounded-3xl shadow-2xl overflow-hidden">
-        {/* Archival Call Number Banner */}
-        <div className="bg-[#1C3A27] px-4 py-2 border-b border-[#B89758]/50 flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-[10px] font-mono text-[#E2CA8E] font-bold">
-            <Scroll className="w-3.5 h-3.5 text-[#B89758]" />
-            <span>ARCHIVE CALL NO. CTB-{venue.id.substring(6).toUpperCase()}</span>
-          </div>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-ink/50 backdrop-blur-sm sm:p-4 animate-rise">
+      <div className="relative w-full max-w-md max-h-[92vh] flex flex-col bg-wall rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden">
+        {/* Hero image */}
+        <div className="relative h-44 w-full shrink-0">
+          <img src={venue.image} alt={venue.name} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-wall via-wall/20 to-transparent" />
+
           <button
             onClick={() => {
               triggerHaptic('light');
               onClose();
             }}
-            className="w-7 h-7 rounded-full bg-[#122419] border border-[#B89758]/60 text-[#D1C7B7] flex items-center justify-center hover:text-white"
+            aria-label="Close"
+            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-card/90 border border-line text-ink flex items-center justify-center hover:text-vermilion"
           >
             <X className="w-4 h-4" />
           </button>
-        </div>
 
-        {/* Hero Image & Archival Frame */}
-        <div className="relative h-52 w-full shrink-0">
-          <img src={venue.image} alt={venue.name} className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#121A15] via-[#121A15]/40 to-transparent" />
-
-          {/* Save to Vault Bookmark */}
           <button
             onClick={() => {
               triggerHaptic('light');
               setSaved(!saved);
             }}
-            className={`absolute top-3 left-3 w-8 h-8 rounded-full border flex items-center justify-center backdrop-blur-md shadow transition ${
-              saved
-                ? 'bg-[#B89758] text-[#121A15] border-[#E2CA8E]'
-                : 'bg-[#1C3A27]/80 text-[#FAF8F5] border-[#B89758]/60'
+            className={`absolute top-3 left-3 w-8 h-8 rounded-full border flex items-center justify-center shadow transition ${
+              saved ? 'bg-gold text-white border-gold' : 'bg-card/90 text-ink border-line'
             }`}
           >
-            <Bookmark className={`w-4 h-4 ${saved ? 'fill-[#121A15]' : ''}`} />
+            <Bookmark className={`w-4 h-4 ${saved ? 'fill-white' : ''}`} />
           </button>
 
-          {/* Badges in Hero */}
           <div className="absolute bottom-2 left-4 right-4 flex items-center justify-between">
             <div className="flex items-center gap-1.5">
-              <span className="px-2.5 py-0.5 rounded bg-[#1C3A27] text-[#E2CA8E] text-[10px] font-bold border border-[#B89758] font-display uppercase tracking-wider">
+              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${TYPE_STYLE[venue.type].chip}`}>
                 {venue.type}
               </span>
-              <span className="px-2.5 py-0.5 rounded bg-[#122419] text-[#FAF8F5] text-[10px] font-bold border border-[#B89758]/60 font-body">
-                {venue.isFree ? 'Free Admission' : venue.entryFee}
+              <span className="px-2.5 py-0.5 rounded-full bg-card/90 text-ink text-[10px] font-bold border border-line">
+                {venue.isFree ? 'Free entry' : venue.entryFee}
               </span>
             </div>
-
             {isVisited && (
-              <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#1C3A27] text-[#E2CA8E] text-[10px] font-bold border border-[#B89758] font-display">
-                <CheckCircle2 className="w-3 h-3 text-[#B89758]" /> Verified Presence
+              <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-teal text-white text-[10px] font-bold">
+                <CheckCircle2 className="w-3 h-3" /> Visited
               </span>
             )}
           </div>
         </div>
 
-        {/* Scrollable Body Content */}
+        {/* Scrollable body */}
         <div className="p-4 overflow-y-auto space-y-4 flex-1">
-          {/* Title & Metadata */}
+          {/* Title & info */}
           <div>
-            <h2 className="text-xl font-bold text-[#FAF8F5] font-display leading-tight">{venue.name}</h2>
-            <p className="text-xs text-[#D1C7B7] font-body mt-1 leading-relaxed italic">{venue.shortDesc}</p>
+            <h2 className="text-xl font-black text-ink font-display leading-tight">{venue.name}</h2>
+            <p className="text-xs text-muted mt-1 leading-relaxed">{venue.shortDesc}</p>
 
-            <div className="flex flex-wrap items-center gap-3 mt-3 text-xs text-[#879B8E] font-body">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3 text-xs text-muted">
               <div className="flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5 text-[#B89758]" />
+                <Clock className="w-3.5 h-3.5 text-teal" />
                 <span>{venue.hours}</span>
               </div>
               <div className="flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5 text-[#B89758]" />
+                <MapPin className="w-3.5 h-3.5 text-vermilion" />
                 <span>{venue.address}</span>
               </div>
-              <div className="flex items-center gap-1 text-[#E2CA8E]">
-                <Users className="w-3.5 h-3.5" />
-                <span>{venue.weeklyVisitors} scholars matriculated this week</span>
+              <div className="flex items-center gap-1">
+                <Users className="w-3.5 h-3.5 text-teal" />
+                <span>{venue.weeklyVisitors} visits this week</span>
               </div>
             </div>
           </div>
 
-          {/* Proximity / Radar Status Card */}
+          {/* Proximity */}
           <div
             className={`p-3 rounded-2xl border flex items-center justify-between ${
-              isWithinRadius
-                ? 'bg-[#1C3A27]/90 border-[#B89758] text-[#E2CA8E]'
-                : 'bg-[#142018] border-[#B89758]/30 text-[#D1C7B7]'
+              isWithinRadius ? 'bg-teal-soft border-teal text-teal' : 'bg-card border-line text-ink'
             }`}
           >
             <div className="flex items-center gap-2.5">
-              <div
-                className={`w-8 h-8 rounded-xl flex items-center justify-center border ${
-                  isWithinRadius
-                    ? 'bg-[#6B1D23] border-[#B89758] text-[#FAF8F5]'
-                    : 'bg-[#122419] border-[#B89758]/40 text-[#B89758]'
-                }`}
-              >
-                <Compass className="w-4 h-4" />
+              <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${isWithinRadius ? 'bg-teal text-white' : 'bg-wall border border-line text-muted'}`}>
+                <Navigation className="w-4 h-4" />
               </div>
               <div>
-                <div className="text-xs font-bold font-display text-[#FAF8F5]">
-                  {isWithinRadius ? 'You are within the Archival Perimeter!' : `${distance}m away (${walkMinutes}m walk)`}
+                <div className="text-xs font-bold">
+                  {isWithinRadius ? "You're in range — ready to check in!" : `${distance}m away (~${walkMinutes} min walk)`}
                 </div>
-                <div className="text-[10px] text-[#A6BAAE] font-body">
-                  {isWithinRadius ? 'Geofence confirmed. Ready to record stamp.' : `Must be within ${venue.radiusMeters}m to seal check-in.`}
+                <div className="text-[10px] opacity-80">
+                  {isWithinRadius ? 'Check in to earn points.' : `You need to be within ${venue.radiusMeters}m to check in.`}
                 </div>
               </div>
             </div>
@@ -187,72 +177,73 @@ export const VenueDetailModal: React.FC<VenueDetailModalProps> = ({
             {!isWithinRadius && (
               <button
                 onClick={() => teleportToVenue(venue.id)}
-                className="px-2.5 py-1 rounded-xl bg-[#1C3A27] border border-[#B89758] text-[#E2CA8E] text-[10px] font-bold font-display hover:bg-[#234731] active:scale-95 transition"
+                className="px-2.5 py-1.5 rounded-full bg-wall border border-line text-[10px] font-bold text-teal hover:border-teal active:scale-95 transition shrink-0"
               >
-                Simulate Presence
+                Demo: teleport
               </button>
             )}
           </div>
 
-          {/* Quests / Inquiries Available */}
+          {/* Quests */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xs font-bold text-[#E2CA8E] font-display uppercase tracking-widest flex items-center gap-1.5">
-                <Feather className="w-3.5 h-3.5 text-[#B89758]" /> Archival Inquiries ({venueQuests.length})
+              <h3 className="text-xs font-bold text-ink uppercase tracking-widest flex items-center gap-1.5 font-display">
+                <Ticket className="w-3.5 h-3.5 text-vermilion" /> Quests here ({venueQuests.length})
               </h3>
             </div>
 
             {venueQuests.length > 0 ? (
               <div className="space-y-2">
-                {venueQuests.map((quest) => (
-                  <button
-                    key={quest.id}
-                    onClick={() => {
-                      triggerHaptic('light');
-                      onOpenQuest(quest.id);
-                    }}
-                    className="w-full p-3 rounded-2xl parchment-card border border-[#B89758]/50 hover:border-[#B89758] text-left flex items-center justify-between group transition"
-                  >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-[#1C3A27] text-[#E2CA8E] font-display uppercase">
-                          {quest.type}
-                        </span>
-                        <span className="text-[10px] text-[#544431] font-mono font-bold">{quest.difficulty}</span>
-                        <span className="text-[10px] text-[#544431]">• {quest.estimatedMinutes}m</span>
+                {venueQuests.map((quest) => {
+                  const isCompleted = completedQuestIds.includes(quest.id);
+                  return (
+                    <button
+                      key={quest.id}
+                      onClick={() => {
+                        triggerHaptic('light');
+                        onOpenQuest(quest.id);
+                      }}
+                      className="w-full p-3 rounded-2xl bg-card border border-line hover:border-vermilion text-left flex items-center justify-between transition group"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-vermilion-soft text-vermilion uppercase">
+                            {quest.type}
+                          </span>
+                          <span className="text-[10px] text-muted font-mono font-bold">{quest.difficulty}</span>
+                          <span className="text-[10px] text-muted">• {quest.estimatedMinutes}m</span>
+                        </div>
+                        <h4 className="text-xs font-bold text-ink font-display mt-1 truncate">{quest.title}</h4>
                       </div>
-                      <h4 className="text-xs font-bold text-[#1C3A27] font-display mt-1">
-                        {quest.title}
-                      </h4>
-                    </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
-                      <div className="text-right">
-                        <span className="text-xs font-bold text-[#6B1D23] font-mono">+{quest.pointsReward} pts</span>
-                        <div className="text-[9px] text-[#544431] font-mono">+{quest.xpReward} XP</div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <div className="text-right">
+                          <span className="text-xs font-bold text-vermilion font-mono">+{quest.pointsReward} pts</span>
+                          <div className="text-[9px] text-muted font-mono">+{quest.xpReward} XP</div>
+                        </div>
+                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold ${isCompleted ? 'bg-teal text-white' : 'bg-vermilion text-white'}`}>
+                          {isCompleted ? <Check className="w-4 h-4" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+                        </div>
                       </div>
-                      <div className="w-7 h-7 rounded-xl bg-[#6B1D23] text-[#FAF8F5] flex items-center justify-center font-bold border border-[#B89758]">
-                        <Play className="w-3.5 h-3.5 fill-[#FAF8F5]" />
-                      </div>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
               </div>
             ) : (
-              <div className="p-3 rounded-2xl parchment-card text-center text-xs text-[#544431]">
-                No pending inquiries at this archive today.
+              <div className="p-3 rounded-2xl bg-card border border-line text-center text-xs text-muted">
+                No quests at this venue yet.
               </div>
             )}
           </div>
 
-          {/* Collectible Cards available here */}
+          {/* Collectible cards */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xs font-bold text-[#E2CA8E] font-display uppercase tracking-widest flex items-center gap-1.5">
-                <BookOpen className="w-3.5 h-3.5 text-[#B89758]" /> Vault Manuscripts ({venueCards.length})
+              <h3 className="text-xs font-bold text-ink uppercase tracking-widest font-display">
+                Collectible cards ({venueCards.length})
               </h3>
-              <span className="text-[10px] font-mono text-[#A6BAAE]">
-                {venueCards.filter((c) => collectedCardIds.includes(c.id)).length}/{venueCards.length} Illuminated
+              <span className="text-[10px] font-mono text-muted">
+                {venueCards.filter((c) => collectedCardIds.includes(c.id)).length}/{venueCards.length} found
               </span>
             </div>
 
@@ -267,26 +258,22 @@ export const VenueDetailModal: React.FC<VenueDetailModalProps> = ({
                       onInspectCard(card.id);
                     }}
                     className={`p-2.5 rounded-2xl border text-left flex items-center gap-2.5 transition ${
-                      isCollected
-                        ? 'parchment-card border-[#B89758]'
-                        : 'bg-[#142018] border-[#1C3A27] opacity-60'
+                      isCollected ? 'bg-card border-line hover:border-gold' : 'bg-wall border-line/60 opacity-70'
                     }`}
                   >
-                    <div className="w-10 h-10 rounded-xl overflow-hidden bg-[#1C3A27] shrink-0 relative border border-[#B89758]/50">
+                    <div className="w-10 h-10 rounded-xl overflow-hidden bg-line shrink-0 relative">
                       {isCollected ? (
                         <img src={card.image} alt={card.name} className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-[#879B8E]">
+                        <div className="w-full h-full flex items-center justify-center text-muted">
                           <Lock className="w-4 h-4" />
                         </div>
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="text-[8px] font-bold font-mono text-[#6B1D23] uppercase">
-                        {card.rarity}
-                      </div>
-                      <div className={`text-[11px] font-bold truncate ${isCollected ? 'text-[#1C3A27] font-display' : 'text-[#879B8E]'}`}>
-                        {isCollected ? card.name : 'Unknown Folio'}
+                      <div className="text-[8px] font-bold font-mono text-gold uppercase">{card.rarity}</div>
+                      <div className={`text-[11px] font-bold truncate ${isCollected ? 'text-ink' : 'text-muted'}`}>
+                        {isCollected ? card.name : 'Not found yet'}
                       </div>
                     </div>
                   </button>
@@ -296,46 +283,59 @@ export const VenueDetailModal: React.FC<VenueDetailModalProps> = ({
           </div>
         </div>
 
-        {/* Bottom Action Ribbon */}
-        <div className="p-3 bg-[#1C3A27] border-t border-[#B89758]/50 flex items-center gap-2">
-          {/* Scanner Button */}
+        {/* Bottom actions */}
+        <div className="p-3 bg-card border-t border-line flex items-center gap-2">
           <button
             onClick={() => {
               triggerHaptic('light');
               setShowQrModal(true);
             }}
-            title="Scan entrance seal"
-            className="w-12 h-12 rounded-2xl bg-[#122419] border border-[#B89758] text-[#E2CA8E] flex items-center justify-center shadow active:scale-95 transition"
+            title="Scan the venue's QR code"
+            className="w-12 h-12 rounded-2xl bg-wall border border-line text-teal flex items-center justify-center shadow-sm active:scale-95 transition"
           >
             <QrCode className="w-5 h-5" />
           </button>
 
-          {/* Primary Wax Seal Check-in Button */}
-          <button
-            onClick={handleGpsCheckin}
-            disabled={!isWithinRadius}
-            className={`flex-1 py-3 px-4 rounded-2xl font-display font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition ${
-              isWithinRadius
-                ? 'btn-wax-seal text-[#FAF8F5] border border-[#B89758]'
-                : 'bg-[#122419] text-[#879B8E] border border-[#1C3A27] cursor-not-allowed'
-            }`}
-          >
-            <Sparkles className="w-4 h-4 text-[#E2CA8E]" />
-            <span>{isVisited ? 'Record Visit Stamp (+50 pts)' : 'Matriculate Stamp (+100 pts Bonus!)'}</span>
-          </button>
+          {venue.isFree ? (
+            <button
+              onClick={handleGpsCheckin}
+              disabled={!isWithinRadius}
+              className={`flex-1 py-3 px-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition active:translate-y-0.5 ${
+                isWithinRadius
+                  ? 'bg-vermilion text-white shadow-[0_4px_0_rgba(0,0,0,0.12)]'
+                  : 'bg-line text-muted cursor-not-allowed'
+              }`}
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>{isVisited ? 'Check in (+50 pts)' : 'Check in (+100 pts first visit)'}</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                triggerHaptic('light');
+                setShowBooking(true);
+              }}
+              className="flex-1 py-3 px-4 rounded-2xl bg-vermilion text-white font-bold text-sm flex items-center justify-center gap-2 transition active:translate-y-0.5 shadow-[0_4px_0_rgba(0,0,0,0.12)]"
+            >
+              <Ticket className="w-4 h-4" />
+              <span>Book visit (+60 pts)</span>
+            </button>
+          )}
 
-          {/* Share */}
           <button
             onClick={handleShare}
-            title="Share this archive"
-            className="w-12 h-12 rounded-2xl bg-[#122419] border border-[#B89758]/60 text-[#D1C7B7] flex items-center justify-center shadow active:scale-95 transition"
+            title="Share this venue"
+            className="w-12 h-12 rounded-2xl bg-wall border border-line text-muted flex items-center justify-center shadow-sm active:scale-95 transition"
           >
             <Share2 className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {/* QR Scanner Modal */}
+      {/* Booking */}
+      {showBooking && <BookingModal venue={venue} onClose={() => setShowBooking(false)} />}
+
+      {/* QR scanner */}
       {showQrModal && (
         <QrScannerModal
           venue={venue}

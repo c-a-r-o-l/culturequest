@@ -1,19 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
-import { PartnerReward, RedeemedVoucher } from '../../types';
+import { PartnerReward } from '../../types';
 import {
   Coins,
   MapPin,
   Clock,
-  Sparkles,
   QrCode,
   CheckCircle2,
-  AlertCircle,
   HelpCircle,
   X,
-  Award,
-  Feather,
-  BookOpen,
+  Ticket,
+  Sparkles,
 } from 'lucide-react';
 import { triggerHaptic, sound } from '../../utils/audioAndFx';
 
@@ -24,6 +21,7 @@ export const RewardsView: React.FC = () => {
     redeemReward,
     redeemedVouchers,
     markVoucherUsed,
+    expireVoucher,
     activeVoucherModal,
     setActiveVoucherModal,
   } = useApp();
@@ -34,24 +32,26 @@ export const RewardsView: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [timeLeftSecs, setTimeLeftSecs] = useState<number>(600);
 
+  // Live countdown for the open voucher; expires it at zero.
   useEffect(() => {
-    if (!activeVoucherModal) return;
+    if (!activeVoucherModal || activeVoucherModal.status !== 'active') return;
 
-    const interval = setInterval(() => {
+    const tick = () => {
       const remaining = Math.max(0, Math.round((activeVoucherModal.expiresAt - Date.now()) / 1000));
       setTimeLeftSecs(remaining);
       if (remaining <= 0) {
-        clearInterval(interval);
+        expireVoucher(activeVoucherModal.id);
       }
-    }, 1000);
-
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
-  }, [activeVoucherModal]);
+  }, [activeVoucherModal, expireVoucher]);
 
   const handleStartRedeem = (reward: PartnerReward) => {
     triggerHaptic('light');
     if (user.points < reward.pointsCost) {
-      setErrorMessage(`You require ${reward.pointsCost - user.points} more honorarium points. Matriculate at Cambridge archives to earn.`);
+      setErrorMessage(`You need ${reward.pointsCost - user.points} more points. Check in at venues or complete quests to earn them.`);
       setTimeout(() => setErrorMessage(''), 3500);
       return;
     }
@@ -63,7 +63,8 @@ export const RewardsView: React.FC = () => {
     const result = redeemReward(selectedReward.id);
     setSelectedReward(null);
     if (!result.success) {
-      alert(result.message);
+      setErrorMessage(result.message);
+      setTimeout(() => setErrorMessage(''), 3500);
     }
   };
 
@@ -74,20 +75,17 @@ export const RewardsView: React.FC = () => {
   };
 
   return (
-    <div className="pb-24 pt-3 px-4 max-w-md mx-auto space-y-4">
-      {/* Top Honorarium Balance Banner */}
-      <div className="p-4 rounded-3xl bg-[#1C3A27] border-2 border-[#B89758] shadow-xl flex items-center justify-between">
+    <div className="pb-24 pt-4 px-4 max-w-md mx-auto space-y-4">
+      {/* Balance banner */}
+      <div className="p-4 rounded-3xl bg-gold-soft border border-gold/60 flex items-center justify-between">
         <div>
-          <span className="text-[10px] font-bold font-display uppercase tracking-widest text-[#B89758] block">
-            Fellowship Honorarium Balance
-          </span>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-[#8A6A10] block">Your points</span>
           <div className="flex items-center gap-2 mt-0.5">
-            <Feather className="w-6 h-6 text-[#E2CA8E]" />
-            <span className="text-3xl font-black text-[#FAF8F5] font-mono">{user.points}</span>
-            <span className="text-xs font-display text-[#B89758]">pts</span>
+            <Coins className="w-6 h-6 text-gold fill-gold/20" />
+            <span className="text-3xl font-black text-ink font-mono">{user.points}</span>
           </div>
-          <span className="text-[11px] text-[#A6BAAE] font-body italic mt-1 block">
-            Yields approximately £{(user.points * 0.04).toFixed(2)} in local Cambridge bookshop & cafe perks
+          <span className="text-[11px] text-muted block mt-1">
+            Spend them on vouchers at local shops & cafés
           </span>
         </div>
 
@@ -96,99 +94,102 @@ export const RewardsView: React.FC = () => {
             triggerHaptic('light');
             setShowWaysToEarn(true);
           }}
-          className="px-3 py-2 rounded-xl bg-[#122419] border border-[#B89758] text-xs font-display font-bold text-[#E2CA8E] flex items-center gap-1.5 shadow"
+          className="px-3 py-2 rounded-full bg-white border border-gold/60 text-xs font-bold text-[#8A6A10] flex items-center gap-1.5 shadow-sm"
         >
-          <HelpCircle className="w-3.5 h-3.5 text-[#B89758]" />
-          <span>Charter</span>
+          <HelpCircle className="w-3.5 h-3.5" />
+          <span>How to earn</span>
         </button>
       </div>
 
-      {/* Error alert toast */}
+      {/* Error toast */}
       {errorMessage && (
-        <div className="p-3 rounded-2xl bg-[#6B1D23] border border-[#B89758] text-[#FAF8F5] text-xs font-body font-bold flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 shrink-0 text-[#E2CA8E]" />
+        <div className="p-3 rounded-2xl bg-vermilion-soft border border-vermilion text-vermilion text-xs font-bold flex items-center gap-2 animate-rise">
+          <HelpCircle className="w-4 h-4 shrink-0" />
           <span>{errorMessage}</span>
         </div>
       )}
 
       {/* Tabs */}
-      <div className="flex rounded-2xl bg-[#1C3A27] p-1 border border-[#B89758]/60">
+      <div className="flex rounded-full bg-card p-1 border border-line">
         <button
           onClick={() => {
             triggerHaptic('light');
             setActiveTab('catalog');
           }}
-          className={`flex-1 py-2 text-xs font-display font-bold uppercase tracking-wider rounded-xl transition ${
-            activeTab === 'catalog'
-              ? 'bg-[#122419] text-[#E2CA8E] border border-[#B89758]'
-              : 'text-[#879B8E] hover:text-[#FAF8F5]'
+          className={`flex-1 py-2 text-xs font-bold rounded-full transition ${
+            activeTab === 'catalog' ? 'bg-ink text-wall' : 'text-muted hover:text-ink'
           }`}
         >
-          Merchant Guilds ({rewards.length})
+          Offers ({rewards.length})
         </button>
         <button
           onClick={() => {
             triggerHaptic('light');
             setActiveTab('vouchers');
           }}
-          className={`flex-1 py-2 text-xs font-display font-bold uppercase tracking-wider rounded-xl transition ${
-            activeTab === 'vouchers'
-              ? 'bg-[#122419] text-[#E2CA8E] border border-[#B89758]'
-              : 'text-[#879B8E] hover:text-[#FAF8F5]'
+          className={`flex-1 py-2 text-xs font-bold rounded-full transition ${
+            activeTab === 'vouchers' ? 'bg-ink text-wall' : 'text-muted hover:text-ink'
           }`}
         >
-          Sealed Vouchers ({redeemedVouchers.length})
+          My vouchers ({redeemedVouchers.length})
         </button>
       </div>
 
-      {/* REWARD OFFERS GRID */}
+      {/* Catalog */}
       {activeTab === 'catalog' && (
         <div className="space-y-3">
           {rewards.map((reward) => {
             const canAfford = user.points >= reward.pointsCost;
 
             return (
-              <div
-                key={reward.id}
-                className="p-4 rounded-3xl parchment-card border border-[#B89758]/70 flex flex-col justify-between space-y-3 shadow-md"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="w-20 h-20 rounded-2xl overflow-hidden bg-[#1C3A27] shrink-0 border border-[#B89758]/60">
-                    <img src={reward.image} alt={reward.businessName} className="w-full h-full object-cover" />
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[9px] font-bold px-2 py-0.2 rounded bg-[#1C3A27] text-[#E2CA8E] font-display uppercase tracking-wider">
-                        {reward.businessType}
-                      </span>
-                      <span className="text-[10px] text-[#544431] font-mono flex items-center gap-0.5">
-                        <MapPin className="w-3 h-3 text-[#6B1D23]" /> {reward.distanceMeters}m
-                      </span>
+              <div key={reward.id} className="ticket rounded-3xl border border-line shadow-sm">
+                <div className="p-4 space-y-2.5">
+                  <div className="flex items-start gap-3">
+                    <div className="w-16 h-16 rounded-2xl overflow-hidden bg-wall shrink-0 border border-line">
+                      <img src={reward.image} alt={reward.businessName} className="w-full h-full object-cover" />
                     </div>
 
-                    <h3 className="text-sm font-bold text-[#1C3A27] font-display mt-1">{reward.title}</h3>
-                    <p className="text-[11px] font-display font-bold text-[#6B1D23]">{reward.businessName}</p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[9px] font-bold px-2 py-0.2 rounded-full bg-teal-soft text-teal uppercase tracking-wider">
+                          {reward.businessType}
+                        </span>
+                        <span className="text-[10px] text-muted font-mono flex items-center gap-0.5">
+                          <MapPin className="w-3 h-3" /> {reward.distanceMeters}m
+                        </span>
+                      </div>
+
+                      <h3 className="text-sm font-bold text-ink font-display mt-1 leading-snug">{reward.title}</h3>
+                      <p className="text-[11px] font-bold text-vermilion">{reward.businessName}</p>
+                    </div>
                   </div>
+
+                  <p className="text-xs text-muted leading-relaxed">{reward.description}</p>
+
+                  {reward.isSponsored && (
+                    <span className="inline-block text-[9px] font-bold px-2 py-0.5 rounded-full bg-gold-soft text-[#8A6A10]">
+                      {reward.sponsorBadge}
+                    </span>
+                  )}
                 </div>
 
-                <p className="text-xs text-[#304135] font-body leading-relaxed italic">{reward.description}</p>
+                <div className="ticket-perf" />
 
-                <div className="pt-2 border-t border-[#B89758]/30 flex items-center justify-between">
+                <div className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-1.5 font-mono">
-                    <Feather className="w-4 h-4 text-[#B89758]" />
-                    <span className="text-sm font-bold text-[#1C3A27]">{reward.pointsCost} Points</span>
+                    <Coins className="w-4 h-4 text-gold" />
+                    <span className="text-sm font-bold text-ink">{reward.pointsCost} pts</span>
                   </div>
 
                   <button
                     onClick={() => handleStartRedeem(reward)}
-                    className={`px-4 py-2 rounded-xl font-display font-bold text-xs uppercase tracking-wider transition ${
+                    className={`px-4 py-2 rounded-full font-bold text-xs transition active:scale-95 ${
                       canAfford
-                        ? 'btn-wax-seal border border-[#B89758] text-[#FAF8F5]'
-                        : 'bg-[#1C3A27] text-[#879B8E] border border-[#B89758]/40'
+                        ? 'bg-vermilion text-white shadow-[0_3px_0_rgba(0,0,0,0.12)]'
+                        : 'bg-line text-muted'
                     }`}
                   >
-                    <span>{canAfford ? 'Redeem Fellowship' : 'Insufficient Points'}</span>
+                    {canAfford ? 'Get voucher' : `Need ${reward.pointsCost - user.points} more`}
                   </button>
                 </div>
               </div>
@@ -197,155 +198,162 @@ export const RewardsView: React.FC = () => {
         </div>
       )}
 
-      {/* MY VOUCHERS LIST */}
+      {/* My vouchers */}
       {activeTab === 'vouchers' && (
         <div className="space-y-3">
           {redeemedVouchers.length > 0 ? (
             redeemedVouchers.map((v) => (
-              <div
+              <button
                 key={v.id}
                 onClick={() => {
                   triggerHaptic('light');
                   setActiveVoucherModal(v);
                 }}
-                className={`p-4 rounded-3xl border text-left cursor-pointer transition ${
+                className={`w-full p-4 rounded-3xl border text-left transition ${
                   v.status === 'active'
-                    ? 'parchment-card border-2 border-[#6B1D23] shadow-md hover:border-[#B89758]'
-                    : 'bg-[#142018] border-[#1C3A27] opacity-60 text-[#879B8E]'
+                    ? 'bg-card border-2 border-gold shadow-sm hover:border-vermilion'
+                    : 'bg-wall border-line opacity-60'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono font-black text-[#6B1D23]">{v.code}</span>
+                  <span className="text-xs font-mono font-black text-ink">{v.code}</span>
                   <span
-                    className={`text-[9px] font-display font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                    className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
                       v.status === 'active'
-                        ? 'bg-[#1C3A27] text-[#E2CA8E] border border-[#B89758]'
-                        : 'bg-[#122419] text-[#879B8E]'
+                        ? 'bg-teal-soft text-teal'
+                        : v.status === 'used'
+                        ? 'bg-wall text-muted'
+                        : 'bg-vermilion-soft text-vermilion'
                     }`}
                   >
-                    {v.status.toUpperCase()}
+                    {v.status === 'active' ? 'Ready to use' : v.status}
                   </span>
                 </div>
 
-                <h4 className="text-sm font-bold text-[#1C3A27] font-display mt-1.5">{v.reward.title}</h4>
-                <p className="text-xs text-[#544431] font-body italic">{v.reward.businessName}</p>
+                <h4 className="text-sm font-bold text-ink font-display mt-1.5">{v.reward.title}</h4>
+                <p className="text-xs text-muted">{v.reward.businessName}</p>
 
-                <div className="mt-3 pt-2 border-t border-[#B89758]/30 flex items-center justify-between text-[11px] text-[#544431] font-mono">
-                  <span>Display to partner barista / bookseller</span>
-                  <QrCode className="w-4 h-4 text-[#B89758]" />
+                <div className="mt-3 pt-2 border-t border-line flex items-center justify-between text-[11px] text-muted font-mono">
+                  <span>{v.status === 'active' ? 'Show this to staff to redeem' : 'Voucher finished'}</span>
+                  <QrCode className="w-4 h-4 text-teal" />
                 </div>
-              </div>
+              </button>
             ))
           ) : (
-            <div className="py-12 text-center text-[#879B8E] text-xs font-display">
-              No redeemed vouchers yet. Matriculate at Cambridge archives to earn honorarium!
+            <div className="py-12 text-center text-muted text-xs">
+              No vouchers yet. Earn points at venues and quests, then grab an offer above.
             </div>
           )}
         </div>
       )}
 
-      {/* CONFIRMATION SHEET */}
+      {/* Confirm redeem */}
       {selectedReward && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-sm rounded-3xl parchment-card border-2 border-[#B89758] p-5 shadow-2xl text-center space-y-4">
-            <div className="w-14 h-14 rounded-2xl bg-[#6B1D23] border border-[#B89758] text-[#E2CA8E] flex items-center justify-center mx-auto">
-              <Award className="w-7 h-7" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 backdrop-blur-sm p-4 animate-rise">
+          <div className="w-full max-w-sm rounded-3xl bg-card border border-line p-5 shadow-2xl text-center space-y-4">
+            <div className="w-14 h-14 rounded-2xl bg-gold-soft text-gold flex items-center justify-center mx-auto">
+              <Ticket className="w-7 h-7" />
             </div>
 
             <div>
-              <h3 className="text-base font-bold text-[#1C3A27] font-display">Claim Fellowship Perk?</h3>
-              <p className="text-xs text-[#304135] font-body mt-1">{selectedReward.title}</p>
-              <p className="text-[11px] text-[#6B1D23] font-display font-bold mt-0.5">{selectedReward.businessName}</p>
+              <h3 className="text-base font-black text-ink font-display">Get this voucher?</h3>
+              <p className="text-xs text-muted mt-1">{selectedReward.title}</p>
+              <p className="text-[11px] text-vermilion font-bold mt-0.5">{selectedReward.businessName}</p>
             </div>
 
-            <div className="p-3 rounded-2xl bg-[#1C3A27] border border-[#B89758]/50 text-xs text-[#D1C7B7] text-left space-y-1 font-body">
-              <div>• Cost: <strong className="text-[#E2CA8E] font-mono">{selectedReward.pointsCost} Points</strong></div>
-              <div>• Balance after: <strong className="text-[#E2CA8E] font-mono">{user.points - selectedReward.pointsCost} Points</strong></div>
-              <div>• Issue: 10-minute dynamic authentication token for counter staff.</div>
+            <div className="p-3 rounded-2xl bg-wall border border-line text-xs text-muted text-left space-y-1">
+              <div>• Cost: <strong className="text-ink font-mono">{selectedReward.pointsCost} points</strong></div>
+              <div>• Balance after: <strong className="text-ink font-mono">{user.points - selectedReward.pointsCost} points</strong></div>
+              <div>• Valid for 10 minutes once issued — show the code to staff.</div>
             </div>
 
             <div className="flex gap-2">
               <button
                 onClick={() => setSelectedReward(null)}
-                className="flex-1 py-3 rounded-xl bg-[#1C3A27] text-[#D1C7B7] font-display font-bold text-xs"
+                className="flex-1 py-3 rounded-xl bg-wall border border-line text-muted font-bold text-xs"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirmRedeem}
-                className="flex-1 py-3 rounded-xl btn-wax-seal border border-[#B89758] text-[#FAF8F5] font-display font-bold text-xs uppercase"
+                className="flex-1 py-3 rounded-xl bg-vermilion text-white font-bold text-sm shadow-[0_3px_0_rgba(0,0,0,0.12)] active:translate-y-0.5"
               >
-                Affix Seal
+                Confirm
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* DYNAMIC 10-MINUTE VOUCHER MODAL */}
+      {/* Voucher modal */}
       {activeVoucherModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in zoom-in-95 duration-200">
-          <div className="w-full max-w-sm rounded-3xl parchment-card border-2 border-[#B89758] p-6 shadow-2xl text-center relative overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 backdrop-blur-sm p-4 animate-rise">
+          <div className="w-full max-w-sm rounded-3xl bg-card border border-line p-6 shadow-2xl text-center relative overflow-hidden">
             <button
               onClick={() => {
                 triggerHaptic('light');
                 setActiveVoucherModal(null);
               }}
-              className="absolute top-4 right-4 w-7 h-7 rounded-full bg-[#1C3A27] text-[#E2CA8E] border border-[#B89758] flex items-center justify-center hover:opacity-80"
+              aria-label="Close"
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-wall border border-line text-muted flex items-center justify-center hover:text-ink"
             >
               <X className="w-4 h-4" />
             </button>
 
-            <span className="text-[9px] font-display font-bold uppercase tracking-widest text-[#6B1D23] bg-[#6B1D23]/10 px-3 py-1 rounded-full border border-[#6B1D23]/30">
-              {activeVoucherModal.status === 'used' ? 'Voucher Inscribed (Used)' : 'Live Fellow Voucher'}
-            </span>
-
-            <h3 className="text-base font-bold text-[#1C3A27] font-display mt-2">{activeVoucherModal.reward.title}</h3>
-            <p className="text-xs text-[#6B1D23] font-display font-bold">{activeVoucherModal.reward.businessName}</p>
-
-            {/* Countdown Clock */}
-            {activeVoucherModal.status === 'active' && (
-              <div className="my-3 py-1.5 px-4 rounded-xl bg-[#1C3A27] border border-[#B89758] inline-flex items-center gap-2">
-                <Clock className="w-4 h-4 text-[#E2CA8E] animate-spin [animation-duration:12s]" />
-                <span className="text-xs font-mono font-bold text-[#FAF8F5]">
-                  {formatCountdown(timeLeftSecs)} expiration window
+            {activeVoucherModal.status !== 'active' && (
+              <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+                <span
+                  className={`px-5 py-2 rounded-lg border-4 font-black text-2xl font-display tracking-[0.2em] bg-white/85 rotate-[-8deg] ${
+                    activeVoucherModal.status === 'used' ? 'border-teal text-teal' : 'border-muted text-muted'
+                  }`}
+                >
+                  {activeVoucherModal.status === 'used' ? 'USED' : 'EXPIRED'}
                 </span>
               </div>
             )}
 
-            {/* Big Ink Stamp QR Code */}
-            <div className="my-3 p-4 bg-white rounded-3xl inline-block shadow-lg border border-[#B89758]">
-              <div className="w-44 h-44 bg-[#121A15] rounded-2xl p-2 flex flex-col items-center justify-between border border-[#B89758]/50">
+            <span className="text-[9px] font-bold uppercase tracking-widest text-teal bg-teal-soft px-3 py-1 rounded-full border border-teal/30">
+              {activeVoucherModal.status === 'active' ? 'Voucher — show to staff' : `Voucher ${activeVoucherModal.status}`}
+            </span>
+
+            <h3 className="text-base font-black text-ink font-display mt-2">{activeVoucherModal.reward.title}</h3>
+            <p className="text-xs text-vermilion font-bold">{activeVoucherModal.reward.businessName}</p>
+
+            {/* Countdown */}
+            {activeVoucherModal.status === 'active' && (
+              <div className="my-3 py-1.5 px-4 rounded-full bg-wall border border-line inline-flex items-center gap-2">
+                <Clock className="w-4 h-4 text-vermilion" />
+                <span className="text-xs font-mono font-bold text-ink">{formatCountdown(timeLeftSecs)} left</span>
+              </div>
+            )}
+
+            {/* Code card */}
+            <div className="my-3 p-4 bg-white rounded-3xl inline-block shadow-sm border border-line">
+              <div className="w-44 rounded-2xl p-3 flex flex-col items-center gap-2 border border-line bg-wall/60">
                 <div className="w-full flex justify-between">
-                  <div className="w-12 h-12 border-4 border-[#B89758] rounded-lg flex items-center justify-center">
-                    <div className="w-6 h-6 bg-[#B89758] rounded-sm" />
+                  <div className="w-10 h-10 rounded-lg border-2 border-ink flex items-center justify-center">
+                    <div className="w-5 h-5 bg-ink rounded-sm" />
                   </div>
-                  <div className="w-12 h-12 border-4 border-[#B89758] rounded-lg flex items-center justify-center">
-                    <div className="w-6 h-6 bg-[#B89758] rounded-sm" />
+                  <div className="w-10 h-10 rounded-lg border-2 border-ink flex items-center justify-center">
+                    <div className="w-5 h-5 bg-ink rounded-sm" />
                   </div>
                 </div>
-
-                <div className="text-[#FAF8F5] font-mono font-bold text-xs tracking-widest">
-                  {activeVoucherModal.code}
-                </div>
-
+                <div className="text-ink font-mono font-bold text-xs tracking-widest">{activeVoucherModal.code}</div>
                 <div className="w-full flex justify-between">
-                  <div className="w-12 h-12 border-4 border-[#B89758] rounded-lg flex items-center justify-center">
-                    <div className="w-6 h-6 bg-[#B89758] rounded-sm" />
+                  <div className="w-10 h-10 rounded-lg border-2 border-ink flex items-center justify-center">
+                    <div className="w-5 h-5 bg-ink rounded-sm" />
                   </div>
-                  <div className="w-10 h-10 bg-[#6B1D23] border border-[#B89758] rounded-lg flex items-center justify-center text-[10px] font-bold text-[#E2CA8E] font-display">
-                    CTB
+                  <div className="w-10 h-10 bg-vermilion rounded-lg flex items-center justify-center text-[9px] font-bold text-white font-display">
+                    CQ
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="text-sm font-mono font-black text-[#6B1D23] tracking-widest">
-              {activeVoucherModal.code}
-            </div>
-            <p className="text-[11px] text-[#544431] font-body mt-1">Present to merchant staff for inspection.</p>
+            <div className="text-sm font-mono font-black text-ink tracking-widest">{activeVoucherModal.code}</div>
+            <p className="text-[11px] text-muted mt-1">Hand your phone to staff — they'll verify the code.</p>
 
-            {/* Merchant redemption button */}
+            {/* Demo: mark used */}
             {activeVoucherModal.status === 'active' ? (
               <button
                 onClick={() => {
@@ -353,60 +361,60 @@ export const RewardsView: React.FC = () => {
                   sound.playCoin();
                   markVoucherUsed(activeVoucherModal.id);
                 }}
-                className="mt-4 w-full py-2.5 rounded-xl bg-[#1C3A27] border border-[#B89758] text-[#E2CA8E] font-display font-bold text-xs uppercase tracking-wider shadow flex items-center justify-center gap-1.5"
+                className="mt-4 w-full py-2.5 rounded-xl bg-teal text-white font-bold text-xs shadow flex items-center justify-center gap-1.5 active:translate-y-0.5 transition"
               >
-                <CheckCircle2 className="w-4 h-4 text-[#B89758]" />
-                <span>Simulate Partner Seal (Mark Redeemed)</span>
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Mark as used (demo)</span>
               </button>
             ) : (
-              <div className="mt-4 p-2 bg-[#1C3A27] border border-[#B89758] rounded-xl text-xs text-[#E2CA8E] font-display font-bold">
-                ✓ Voucher has been redeemed
+              <div className="mt-4 p-2 bg-wall border border-line rounded-xl text-xs text-muted font-bold">
+                {activeVoucherModal.status === 'used' ? '✓ Redeemed at the shop' : 'This voucher has expired'}
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* WAYS TO EARN CHARTER */}
+      {/* Ways to earn */}
       {showWaysToEarn && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-sm rounded-3xl parchment-card border-2 border-[#B89758] p-5 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-[#B89758]/40">
-              <h3 className="text-base font-bold text-[#1C3A27] font-display flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[#B89758]" /> Honorarium Charter
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 backdrop-blur-sm p-4 animate-rise">
+          <div className="w-full max-w-sm rounded-3xl bg-card border border-line p-5 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-line">
+              <h3 className="text-base font-black text-ink font-display flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-gold" /> How to earn points
               </h3>
               <button
                 onClick={() => setShowWaysToEarn(false)}
-                className="w-7 h-7 rounded-full bg-[#1C3A27] text-[#E2CA8E] flex items-center justify-center"
+                className="w-7 h-7 rounded-full bg-wall text-muted flex items-center justify-center"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="space-y-2 text-xs font-body text-[#1C3A27]">
-              <div className="p-2.5 rounded-xl bg-[#F5EFE2] border border-[#B89758]/50 flex items-center justify-between">
-                <span>📍 Record presence at any Cambridge archive</span>
-                <strong className="font-mono text-[#6B1D23]">+50 pts</strong>
+            <div className="space-y-2 text-xs text-ink">
+              <div className="p-2.5 rounded-xl bg-wall border border-line flex items-center justify-between">
+                <span>📍 Check in at any venue</span>
+                <strong className="font-mono text-vermilion">+50 pts</strong>
               </div>
-              <div className="p-2.5 rounded-xl bg-[#F5EFE2] border border-[#B89758]/50 flex items-center justify-between">
-                <span>⭐ First matriculation at new archive (2x)</span>
-                <strong className="font-mono text-[#6B1D23]">+100 pts</strong>
+              <div className="p-2.5 rounded-xl bg-wall border border-line flex items-center justify-between">
+                <span>⭐ First visit to a new venue (2x)</span>
+                <strong className="font-mono text-vermilion">+100 pts</strong>
               </div>
-              <div className="p-2.5 rounded-xl bg-[#F5EFE2] border border-[#B89758]/50 flex items-center justify-between">
-                <span>📜 Decipher an inquiry treatise</span>
-                <strong className="font-mono text-[#6B1D23]">+140 - 250 pts</strong>
+              <div className="p-2.5 rounded-xl bg-wall border border-line flex items-center justify-between">
+                <span>🎟️ Complete a quest</span>
+                <strong className="font-mono text-vermilion">+90–450 pts</strong>
               </div>
-              <div className="p-2.5 rounded-xl bg-[#F5EFE2] border border-[#B89758]/50 flex items-center justify-between">
-                <span>🔥 7-day academic streak maintained</span>
-                <strong className="font-mono text-[#6B1D23]">+150 pts</strong>
+              <div className="p-2.5 rounded-xl bg-wall border border-line flex items-center justify-between">
+                <span>🔥 Keep a 7-day streak</span>
+                <strong className="font-mono text-vermilion">+150 pts</strong>
               </div>
             </div>
 
             <button
               onClick={() => setShowWaysToEarn(false)}
-              className="w-full py-3 rounded-xl btn-wax-seal border border-[#B89758] text-[#FAF8F5] font-display font-bold text-xs uppercase"
+              className="w-full py-3 rounded-xl bg-ink text-wall font-bold text-xs active:translate-y-0.5 transition"
             >
-              Affirm Charter
+              Got it
             </button>
           </div>
         </div>

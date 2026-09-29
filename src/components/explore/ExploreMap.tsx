@@ -2,28 +2,25 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Venue, VenueType } from '../../types';
 import {
-  Compass,
   MapPin,
   Clock,
   Sparkles,
   Zap,
-  CheckCircle2,
   Navigation,
   Crosshair,
-  Filter,
-  Flame,
   Plus,
   Minus,
-  BookOpen,
+  Flame,
+  Check,
 } from 'lucide-react';
 import { triggerHaptic, sound } from '../../utils/audioAndFx';
 
-// Map Coordinate System for Cambridge
+// Map coordinate system for Cambridge (pilot city)
 const MAP_BOUNDS = {
-  minLat: 52.1900,
-  maxLat: 52.2150,
-  minLng: 0.1000,
-  maxLng: 0.1360,
+  minLat: 52.19,
+  maxLat: 52.215,
+  minLng: 0.1,
+  maxLng: 0.136,
   width: 2200,
   height: 2600,
 };
@@ -33,6 +30,27 @@ function projectCoords(lat: number, lng: number) {
   const y = ((MAP_BOUNDS.maxLat - lat) / (MAP_BOUNDS.maxLat - MAP_BOUNDS.minLat)) * MAP_BOUNDS.height;
   return { x, y };
 }
+
+// Palette for the bright tourist-style map
+const LAND = '#EFF1E4';
+const LAND_EDGE = '#DDE0CC';
+const WATER = '#A9D3E4';
+const WATER_DEEP = '#8FC2D8';
+const PARK = '#B9D0A4';
+const PARK_EDGE = '#97B57F';
+const STREET = '#FFFFFF';
+const STREET_CASING = '#D8D6C4';
+const INK = '#3A382E';
+const MUTED = '#6E6B5C';
+const GOLD = '#F2A71B';
+
+const VENUE_STYLE: Record<VenueType, { ring: string; emoji: string; label: string }> = {
+  Museum: { ring: '#E23D28', emoji: '🏛️', label: 'Museum' },
+  Gallery: { ring: '#127E8A', emoji: '🖼️', label: 'Gallery' },
+  Library: { ring: '#4C5FD5', emoji: '📚', label: 'Library' },
+  Heritage: { ring: '#F2A71B', emoji: '⛪', label: 'Heritage' },
+  Garden: { ring: '#6E9A54', emoji: '🌿', label: 'Garden' },
+};
 
 export const ExploreMap: React.FC = () => {
   const {
@@ -50,7 +68,7 @@ export const ExploreMap: React.FC = () => {
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Pan & Zoom state
+  // Pan & zoom state
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: -600, y: -800 });
   const [isDragging, setIsDragging] = useState(false);
@@ -59,30 +77,32 @@ export const ExploreMap: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<'All' | VenueType>('All');
   const [showSimNotice, setShowSimNotice] = useState(false);
 
-  // Filtered venues
   const filteredVenues = venues.filter((v) => {
     if (activeFilter === 'All') return true;
     return v.type === activeFilter;
   });
 
-  // Calculate user position in map space
   const userPos = projectCoords(userLocation.lat, userLocation.lng);
 
-  // Center pan on given map coordinate
-  const centerOnPoint = useCallback((mapX: number, mapY: number, targetZoom = zoom) => {
-    if (!containerRef.current) return;
-    const viewWidth = containerRef.current.clientWidth;
-    const viewHeight = containerRef.current.clientHeight;
+  // Center pan on a map coordinate
+  const centerOnPoint = useCallback(
+    (mapX: number, mapY: number, targetZoom = zoom) => {
+      if (!containerRef.current) return;
+      const viewWidth = containerRef.current.clientWidth;
+      const viewHeight = containerRef.current.clientHeight;
 
-    const newX = viewWidth / 2 - mapX * targetZoom;
-    const newY = viewHeight / 2 - mapY * targetZoom;
-    setPan({ x: newX, y: newY });
-  }, [zoom]);
+      const newX = viewWidth / 2 - mapX * targetZoom;
+      const newY = viewHeight / 2 - mapY * targetZoom;
+      setPan({ x: newX, y: newY });
+    },
+    [zoom]
+  );
 
-  // Initial center on user
+  // Initial center on the player
   useEffect(() => {
     centerOnPoint(userPos.x, userPos.y, 1.15);
     setZoom(1.15);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleRecenter = () => {
@@ -100,7 +120,7 @@ export const ExploreMap: React.FC = () => {
     setZoom((prev) => Math.max(0.65, prev - 0.25));
   };
 
-  // Dragging handlers (Mouse & Touch)
+  // Dragging (mouse & touch)
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
     setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
@@ -108,15 +128,10 @@ export const ExploreMap: React.FC = () => {
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging) return;
-    setPan({
-      x: e.clientX - dragStart.x,
-      y: e.clientY - dragStart.y,
-    });
+    setPan({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
   };
 
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
+  const handleMouseUp = () => setIsDragging(false);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length === 1) {
@@ -136,20 +151,15 @@ export const ExploreMap: React.FC = () => {
     });
   };
 
-  const handleTouchEnd = () => {
-    setIsDragging(false);
-  };
+  const handleTouchEnd = () => setIsDragging(false);
 
-  const handleQuickDose = () => {
+  // Quick Quest: jump straight into today's bite-size quest
+  const handleQuickQuest = () => {
     triggerHaptic('medium');
     sound.playCoin();
     const dailyQuest = quests.find((q) => q.isDaily) || quests[0];
     if (dailyQuest) {
-      const venue = venues.find((v) => v.id === dailyQuest.venueId);
-      if (venue) {
-        setSelectedVenue(venue);
-        setActivePlayingQuest(dailyQuest);
-      }
+      setActivePlayingQuest(dailyQuest);
     }
   };
 
@@ -163,9 +173,9 @@ export const ExploreMap: React.FC = () => {
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      className="relative w-full h-[calc(100vh-60px)] overflow-hidden bg-[#121A15] cursor-grab active:cursor-grabbing select-none"
+      className="absolute inset-0 overflow-hidden bg-wall cursor-grab active:cursor-grabbing select-none"
     >
-      {/* ================= CANTABRIGIA ANTIQUARIAN PARCHMENT MAP ================= */}
+      {/* ============ THE MAP (pannable layer) ============ */}
       <div
         className="absolute top-0 left-0 transition-transform duration-75 will-change-transform origin-top-left"
         style={{
@@ -180,295 +190,174 @@ export const ExploreMap: React.FC = () => {
           viewBox={`0 0 ${MAP_BOUNDS.width} ${MAP_BOUNDS.height}`}
           className="w-full h-full pointer-events-none"
         >
-          <defs>
-            {/* Dark Academia Nocturnal Cartography Background */}
-            <linearGradient id="darkCartoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#080F0B" />
-              <stop offset="50%" stopColor="#0D1812" />
-              <stop offset="100%" stopColor="#060C09" />
-            </linearGradient>
+          {/* Base land */}
+          <rect width={MAP_BOUNDS.width} height={MAP_BOUNDS.height} fill={LAND} />
+          <rect
+            width={MAP_BOUNDS.width}
+            height={MAP_BOUNDS.height}
+            fill="none"
+            stroke={LAND_EDGE}
+            strokeWidth="6"
+          />
 
-            {/* Glowing River Cam Stream */}
-            <linearGradient id="darkRiverGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#0D3547" />
-              <stop offset="50%" stopColor="#124E68" />
-              <stop offset="100%" stopColor="#0A2D3D" />
-            </linearGradient>
-
-            {/* Dark Scholarly Grid with Brass Points */}
-            <pattern id="cartoGrid" width="100" height="100" patternUnits="userSpaceOnUse">
-              <path d="M 100 0 L 0 0 0 100" fill="none" stroke="#B89758" strokeWidth="0.75" strokeOpacity="0.12" strokeDasharray="3,3" />
-              <circle cx="0" cy="0" r="1.5" fill="#B89758" fillOpacity="0.25" />
-            </pattern>
-
-            {/* Dark Botanical Foliage Hatch */}
-            <pattern id="botanicalHatch" width="16" height="16" patternUnits="userSpaceOnUse">
-              <rect width="16" height="16" fill="#112217" />
-              <circle cx="8" cy="8" r="1.5" fill="#1C3A27" opacity="0.8" />
-            </pattern>
-
-            {/* College Quad Architectural Hatch */}
-            <pattern id="collegeHatch" width="12" height="12" patternUnits="userSpaceOnUse">
-              <rect width="12" height="12" fill="#18271E" />
-              <line x1="0" y1="0" x2="12" y2="12" stroke="#B89758" strokeWidth="0.8" opacity="0.3" />
-            </pattern>
-          </defs>
-
-          {/* 1. Dark Mode Terrain & Grid */}
-          <rect width={MAP_BOUNDS.width} height={MAP_BOUNDS.height} fill="url(#darkCartoGrad)" />
-          <rect width={MAP_BOUNDS.width} height={MAP_BOUNDS.height} fill="url(#cartoGrid)" />
-
-          {/* Cartographic Compass Rose in upper left corner */}
-          <g id="compass-rose" transform="translate(300, 360)">
-            <circle cx="0" cy="0" r="90" fill="none" stroke="#B89758" strokeWidth="1.5" strokeDasharray="4,3" opacity="0.6" />
-            <circle cx="0" cy="0" r="75" fill="none" stroke="#B89758" strokeWidth="1" opacity="0.4" />
-            {/* Compass Star Points */}
-            <polygon points="0,-70 12,-15 0,0" fill="#8E232B" />
-            <polygon points="0,-70 -12,-15 0,0" fill="#E2CA8E" />
-            <polygon points="0,70 12,15 0,0" fill="#E2CA8E" />
-            <polygon points="0,70 -12,15 0,0" fill="#8E232B" />
-            <polygon points="70,0 15,12 0,0" fill="#E2CA8E" />
-            <polygon points="70,0 15,-12 0,0" fill="#8E232B" />
-            <polygon points="-70,0 -15,12 0,0" fill="#8E232B" />
-            <polygon points="-70,0 -15,-12 0,0" fill="#E2CA8E" />
-            <circle cx="0" cy="0" r="8" fill="#1C3A27" stroke="#E2CA8E" strokeWidth="2" />
-            <text x="0" y="-80" textAnchor="middle" fill="#E2CA8E" fontSize="16" fontWeight="bold" fontFamily="Cinzel">N</text>
-            <text x="0" y="96" textAnchor="middle" fill="#B89758" fontSize="14" fontWeight="bold" fontFamily="Cinzel">S</text>
-            <text x="88" y="5" textAnchor="start" fill="#B89758" fontSize="14" fontWeight="bold" fontFamily="Cinzel">E</text>
-            <text x="-88" y="5" textAnchor="end" fill="#B89758" fontSize="14" fontWeight="bold" fontFamily="Cinzel">W</text>
-            <text x="0" y="115" textAnchor="middle" fill="#B89758" fontSize="10" fontFamily="Cinzel" letterSpacing="2" opacity="0.8">
-              ACADEMIA CANTABRIGIENSIS
-            </text>
-          </g>
-
-          {/* 2. Historic Cambridge Green Spaces (The Backs, Coe Fen, Jesus Green, Botanic Gardens) */}
-          <g id="parks-and-greens">
-            {/* The Backs (Meandering along River Cam) */}
+          {/* Green spaces */}
+          <g id="parks">
             <path
               d="M 600,680 Q 750,900 780,1200 L 950,1180 Q 920,850 780,650 Z"
-              fill="url(#botanicalHatch)"
-              stroke="#B89758"
-              strokeWidth="1.5"
-              strokeDasharray="4,2"
-              strokeOpacity="0.4"
+              fill={PARK}
+              stroke={PARK_EDGE}
+              strokeWidth="3"
             />
-            <text x="680" y="920" fill="#E2CA8E" fontSize="16" fontWeight="bold" fontFamily="Cinzel" letterSpacing="4" opacity="0.85">
+            <text x="690" y="930" fill="#4E6B3E" fontSize="17" fontWeight="700" fontFamily="Archivo, sans-serif" letterSpacing="2">
               THE BACKS
             </text>
 
-            {/* Coe Fen (South of Mill Pond) */}
             <path
               d="M 820,1500 Q 980,1650 960,1900 L 1120,1880 Q 1150,1600 1020,1450 Z"
-              fill="url(#botanicalHatch)"
-              stroke="#B89758"
-              strokeWidth="1.2"
-              strokeOpacity="0.3"
+              fill={PARK}
+              stroke={PARK_EDGE}
+              strokeWidth="3"
             />
-            <text x="910" y="1720" fill="#E2CA8E" fontSize="14" fontWeight="bold" fontFamily="Cinzel" letterSpacing="3" opacity="0.8">
+            <text x="915" y="1710" fill="#4E6B3E" fontSize="15" fontWeight="700" fontFamily="Archivo, sans-serif" letterSpacing="2">
               COE FEN
             </text>
 
-            {/* Jesus Green (North East) */}
-            <rect
-              x="1200"
-              y="280"
-              width="450"
-              height="220"
-              rx="16"
-              fill="url(#botanicalHatch)"
-              stroke="#B89758"
-              strokeWidth="1.5"
-              strokeOpacity="0.35"
-            />
-            <text x="1350" y="390" fill="#E2CA8E" fontSize="16" fontWeight="bold" fontFamily="Cinzel" letterSpacing="3" opacity="0.85">
+            <rect x="1200" y="280" width="450" height="220" rx="18" fill={PARK} stroke={PARK_EDGE} strokeWidth="3" />
+            <text x="1340" y="398" fill="#4E6B3E" fontSize="17" fontWeight="700" fontFamily="Archivo, sans-serif" letterSpacing="2">
               JESUS GREEN
             </text>
 
-            {/* Parker's Piece */}
-            <rect
-              x="1480"
-              y="1100"
-              width="380"
-              height="360"
-              rx="12"
-              fill="url(#botanicalHatch)"
-              stroke="#B89758"
-              strokeWidth="1.5"
-              strokeOpacity="0.35"
-            />
-            <text x="1560" y="1280" fill="#E2CA8E" fontSize="16" fontWeight="bold" fontFamily="Cinzel" letterSpacing="2" opacity="0.85">
+            <rect x="1480" y="1100" width="380" height="360" rx="14" fill={PARK} stroke={PARK_EDGE} strokeWidth="3" />
+            <text x="1552" y="1288" fill="#4E6B3E" fontSize="17" fontWeight="700" fontFamily="Archivo, sans-serif" letterSpacing="1">
               PARKER'S PIECE
             </text>
-            <text x="1575" y="1305" fill="#879B8E" fontSize="11" fontFamily="EB Garamond" fontStyle="italic">
-              Anno Domini 1863
-            </text>
 
-            {/* Cambridge University Botanic Garden */}
-            <rect
-              x="1400"
-              y="1900"
-              width="420"
-              height="360"
-              rx="18"
-              fill="#122419"
-              stroke="#B89758"
-              strokeWidth="2"
-            />
-            <rect
-              x="1410"
-              y="1910"
-              width="400"
-              height="340"
-              rx="14"
-              fill="none"
-              stroke="#B89758"
-              strokeWidth="1"
-              strokeDasharray="6,3"
-              strokeOpacity="0.5"
-            />
-            <text x="1460" y="2080" fill="#E2CA8E" fontSize="16" fontWeight="bold" fontFamily="Cinzel" letterSpacing="1">
-              HORTUS BOTANICUS
+            <rect x="1400" y="1900" width="420" height="360" rx="20" fill="#A8C48F" stroke={PARK_EDGE} strokeWidth="4" />
+            <rect x="1412" y="1912" width="396" height="336" rx="14" fill="none" stroke={PARK_EDGE} strokeWidth="2" strokeDasharray="8,4" />
+            <text x="1470" y="2090" fill="#3F5A33" fontSize="18" fontWeight="800" fontFamily="Archivo, sans-serif">
+              BOTANIC GARDEN
             </text>
-            <text x="1490" y="2110" fill="#A6BAAE" fontSize="12" fontFamily="EB Garamond" fontStyle="italic">
-              Cantabrigia Flora & Silviculture
+            <text x="1540" y="2120" fill="#5A7350" fontSize="13" fontStyle="italic" fontFamily="Inter, sans-serif">
+              Glasshouses & heritage trees
             </text>
           </g>
 
-          {/* 3. The River Cam (Flowing gracefully in deep nocturnal teal with gold wavelets) */}
-          <g id="river-cam">
-            {/* River bed bank outer glow */}
+          {/* River Cam */}
+          <g id="river">
             <path
               d="M 920,2300 C 900,1950 860,1750 960,1520 C 1020,1380 940,1260 880,1050 C 830,880 840,650 930,480 C 1020,320 1200,240 1600,180"
               fill="none"
-              stroke="#0A2533"
-              strokeWidth="42"
+              stroke={WATER_DEEP}
+              strokeWidth="34"
               strokeLinecap="round"
-              opacity="0.6"
+              opacity="0.5"
             />
-            {/* Main Stream */}
             <path
               d="M 920,2300 C 900,1950 860,1750 960,1520 C 1020,1380 940,1260 880,1050 C 830,880 840,650 930,480 C 1020,320 1200,240 1600,180"
               fill="none"
-              stroke="url(#darkRiverGrad)"
-              strokeWidth="28"
+              stroke={WATER}
+              strokeWidth="24"
               strokeLinecap="round"
             />
-            {/* Water Flow Illuminated Ripples */}
-            <path
-              d="M 920,2300 C 900,1950 860,1750 960,1520 C 1020,1380 940,1260 880,1050 C 830,880 840,650 930,480 C 1020,320 1200,240 1600,180"
-              fill="none"
-              stroke="#38BDF8"
-              strokeWidth="2.5"
-              strokeDasharray="14, 28"
-              strokeLinecap="round"
-              opacity="0.8"
-            />
-            <text x="890" y="850" fill="#7DD3FC" fontSize="14" fontWeight="bold" fontFamily="Cinzel" letterSpacing="5" opacity="0.9">
-              FLUMEN   CAMUS
+            <text x="880" y="862" fill="#127E8A" fontSize="15" fontWeight="800" fontFamily="Archivo, sans-serif" letterSpacing="4">
+              RIVER CAM
             </text>
           </g>
 
-          {/* 4. Historic Bridges across River Cam */}
+          {/* Bridges */}
           <g id="bridges">
-            {/* King's Bridge */}
-            <rect x="860" y="1015" width="50" height="10" rx="3" fill="#B89758" stroke="#121A15" strokeWidth="1.5" />
-            <text x="770" y="1010" fill="#E2CA8E" fontSize="11" fontWeight="bold" fontFamily="Cinzel">Pons Regalis</text>
+            <rect x="858" y="1012" width="54" height="12" rx="4" fill="#8B8578" />
+            <text x="772" y="1008" fill={MUTED} fontSize="12" fontWeight="700" fontFamily="Archivo, sans-serif">King's Bridge</text>
 
-            {/* Mathematical Bridge */}
-            <rect x="910" y="1255" width="48" height="10" rx="3" fill="#B89758" stroke="#121A15" strokeWidth="1.5" />
-            <text x="965" y="1265" fill="#E2CA8E" fontSize="11" fontWeight="bold" fontFamily="Cinzel">Pons Mathematicus</text>
+            <rect x="908" y="1252" width="52" height="12" rx="4" fill="#8B8578" />
+            <text x="970" y="1266" fill={MUTED} fontSize="12" fontWeight="700" fontFamily="Archivo, sans-serif">Mathematical Bridge</text>
 
-            {/* Bridge of Sighs */}
-            <rect x="880" y="615" width="48" height="10" rx="3" fill="#B89758" stroke="#121A15" strokeWidth="1.5" />
-            <text x="760" y="612" fill="#E2CA8E" fontSize="11" fontWeight="bold" fontFamily="Cinzel">Pons Suspiriorum</text>
+            <rect x="878" y="612" width="52" height="12" rx="4" fill="#8B8578" />
+            <text x="762" y="608" fill={MUTED} fontSize="12" fontWeight="700" fontFamily="Archivo, sans-serif">Bridge of Sighs</text>
           </g>
 
-          {/* 5. Historic College Courts Footprints (Architectural Quadrangles) */}
+          {/* Colleges */}
           <g id="colleges">
-            {/* King's College Court */}
-            <rect x="960" y="980" width="85" height="110" rx="4" fill="url(#collegeHatch)" stroke="#B89758" strokeWidth="1.5" />
-            <text x="970" y="1040" fill="#E2CA8E" fontSize="12" fontWeight="bold" fontFamily="Cinzel">King's</text>
+            <rect x="960" y="980" width="85" height="110" rx="6" fill="#FFFFFF" stroke={STREET_CASING} strokeWidth="3" />
+            <text x="972" y="1040" fill={INK} fontSize="13" fontWeight="700" fontFamily="Archivo, sans-serif">King's</text>
 
-            {/* Trinity College Great Court */}
-            <rect x="940" y="740" width="100" height="120" rx="4" fill="url(#collegeHatch)" stroke="#B89758" strokeWidth="1.5" />
-            <text x="960" y="805" fill="#E2CA8E" fontSize="12" fontWeight="bold" fontFamily="Cinzel">Trinity</text>
+            <rect x="940" y="740" width="100" height="120" rx="6" fill="#FFFFFF" stroke={STREET_CASING} strokeWidth="3" />
+            <text x="962" y="806" fill={INK} fontSize="13" fontWeight="700" fontFamily="Archivo, sans-serif">Trinity</text>
 
-            {/* St John's College */}
-            <rect x="920" y="560" width="90" height="95" rx="4" fill="url(#collegeHatch)" stroke="#B89758" strokeWidth="1.5" />
-            <text x="935" y="615" fill="#E2CA8E" fontSize="12" fontWeight="bold" fontFamily="Cinzel">St John's</text>
+            <rect x="920" y="560" width="90" height="95" rx="6" fill="#FFFFFF" stroke={STREET_CASING} strokeWidth="3" />
+            <text x="938" y="612" fill={INK} fontSize="13" fontWeight="700" fontFamily="Archivo, sans-serif">St John's</text>
 
-            {/* Cambridge University Library Tower */}
-            <rect x="420" y="910" width="80" height="85" rx="6" fill="#1C2D23" stroke="#B89758" strokeWidth="1.5" />
-            <text x="430" y="955" fill="#FAF8F5" fontSize="10" fontWeight="bold" fontFamily="Cinzel">UL Tower</text>
+            <rect x="420" y="910" width="80" height="85" rx="8" fill="#FFFFFF" stroke={STREET_CASING} strokeWidth="3" />
+            <text x="432" y="956" fill={INK} fontSize="11" fontWeight="700" fontFamily="Archivo, sans-serif">University Library</text>
 
-            {/* Market Square */}
-            <rect x="1110" y="960" width="55" height="55" rx="4" fill="#B89758" fillOpacity="0.2" stroke="#B89758" strokeWidth="1.5" strokeDasharray="3,2" />
-            <text x="1115" y="990" fill="#E2CA8E" fontSize="9" fontWeight="bold" fontFamily="Cinzel">Forum</text>
+            <rect x="1110" y="960" width="55" height="55" rx="6" fill="#FDF2D8" stroke={GOLD} strokeWidth="3" strokeDasharray="4,3" />
+            <text x="1117" y="992" fill="#8A6A10" fontSize="10" fontWeight="700" fontFamily="Archivo, sans-serif">Market</text>
           </g>
 
-          {/* 6. Historic Streets */}
+          {/* Streets */}
           <g id="streets">
-            {/* King's Parade / Trinity Street */}
             <path
               d="M 1120,1850 L 1100,1350 L 1040,920 L 980,560 L 920,400"
               fill="none"
-              stroke="#152119"
+              stroke={STREET_CASING}
+              strokeWidth="22"
+              strokeLinecap="round"
+            />
+            <path
+              d="M 1120,1850 L 1100,1350 L 1040,920 L 980,560 L 920,400"
+              fill="none"
+              stroke={STREET}
               strokeWidth="16"
               strokeLinecap="round"
             />
-            <path
-              d="M 1120,1850 L 1100,1350 L 1040,920 L 980,560 L 920,400"
-              fill="none"
-              stroke="#B89758"
-              strokeWidth="4"
-              strokeLinecap="round"
-              strokeDasharray="8,6"
-              strokeOpacity="0.65"
-            />
-            <text x="1055" y="920" fill="#E2CA8E" fontSize="11" fontWeight="bold" fontFamily="Cinzel" opacity="0.9">Via Regalis</text>
+            <text x="1060" y="922" fill={MUTED} fontSize="12" fontWeight="600" fontFamily="Archivo, sans-serif">King's Parade</text>
 
-            {/* Castle Street */}
-            <path d="M 920,400 L 820,240" fill="none" stroke="#152119" strokeWidth="10" strokeLinecap="round" />
-            <path d="M 920,400 L 820,240" fill="none" stroke="#B89758" strokeWidth="3" strokeDasharray="6,4" strokeOpacity="0.5" strokeLinecap="round" />
-            <text x="760" y="305" fill="#E2CA8E" fontSize="11" fontWeight="bold" fontFamily="Cinzel" opacity="0.85">Castle Hill</text>
+            <path d="M 920,400 L 820,240" fill="none" stroke={STREET_CASING} strokeWidth="16" strokeLinecap="round" />
+            <path d="M 920,400 L 820,240" fill="none" stroke={STREET} strokeWidth="10" strokeLinecap="round" />
+            <text x="760" y="308" fill={MUTED} fontSize="12" fontWeight="600" fontFamily="Archivo, sans-serif">Castle Hill</text>
 
-            {/* Downing Street / Free School Lane */}
-            <path d="M 1080,1130 L 1480,1130" fill="none" stroke="#152119" strokeWidth="10" strokeLinecap="round" />
-            <path d="M 1080,1130 L 1480,1130" fill="none" stroke="#B89758" strokeWidth="3" strokeDasharray="6,4" strokeOpacity="0.5" strokeLinecap="round" />
-            <text x="1220" y="1120" fill="#E2CA8E" fontSize="11" fontWeight="bold" fontFamily="Cinzel" opacity="0.85">Downing St</text>
+            <path d="M 1080,1130 L 1480,1130" fill="none" stroke={STREET_CASING} strokeWidth="16" strokeLinecap="round" />
+            <path d="M 1080,1130 L 1480,1130" fill="none" stroke={STREET} strokeWidth="10" strokeLinecap="round" />
+            <text x="1220" y="1120" fill={MUTED} fontSize="12" fontWeight="600" fontFamily="Archivo, sans-serif">Downing St</text>
 
-            {/* Trumpington Road */}
-            <path d="M 1100,1350 L 1110,1650 L 1400,2100" fill="none" stroke="#152119" strokeWidth="12" strokeLinecap="round" />
-            <path d="M 1100,1350 L 1110,1650 L 1400,2100" fill="none" stroke="#B89758" strokeWidth="3.5" strokeDasharray="8,5" strokeOpacity="0.55" strokeLinecap="round" />
-            <text x="1125" y="1520" fill="#E2CA8E" fontSize="11" fontWeight="bold" fontFamily="Cinzel" opacity="0.85">Trumpington St</text>
+            <path d="M 1100,1350 L 1110,1650 L 1400,2100" fill="none" stroke={STREET_CASING} strokeWidth="18" strokeLinecap="round" />
+            <path d="M 1100,1350 L 1110,1650 L 1400,2100" fill="none" stroke={STREET} strokeWidth="12" strokeLinecap="round" />
+            <text x="1128" y="1524" fill={MUTED} fontSize="12" fontWeight="600" fontFamily="Archivo, sans-serif">Trumpington St</text>
+          </g>
+
+          {/* Small compass rose */}
+          <g transform="translate(1910, 380)">
+            <circle cx="0" cy="0" r="52" fill="#FFFFFF" opacity="0.85" stroke={STREET_CASING} strokeWidth="3" />
+            <polygon points="0,-38 9,-8 0,0" fill={GOLD} />
+            <polygon points="0,-38 -9,-8 0,0" fill="#E8B54A" />
+            <polygon points="0,38 9,8 0,0" fill="#E8E3CF" />
+            <polygon points="0,38 -9,8 0,0" fill="#D9D3BD" />
+            <polygon points="38,0 8,9 0,0" fill="#E8E3CF" />
+            <polygon points="38,0 8,-9 0,0" fill="#D9D3BD" />
+            <polygon points="-38,0 -8,9 0,0" fill="#D9D3BD" />
+            <polygon points="-38,0 -8,-9 0,0" fill="#E8E3CF" />
+            <circle cx="0" cy="0" r="4" fill={INK} />
+            <text x="0" y="-46" textAnchor="middle" fill={INK} fontSize="13" fontWeight="800" fontFamily="Archivo, sans-serif">N</text>
           </g>
         </svg>
 
-        {/* 7. Scholar Avatar & Radar Pulse */}
+        {/* Player marker */}
         <div
           className="absolute z-30 pointer-events-none -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
-          style={{
-            left: userPos.x,
-            top: userPos.y,
-          }}
+          style={{ left: userPos.x, top: userPos.y }}
         >
-          {/* Radar Waves (representing 75m detection radius in antique gold) */}
-          <div className="absolute w-44 h-44 rounded-full bg-[#B89758]/15 border border-[#B89758]/50 animate-radar" />
-          <div className="absolute w-28 h-28 rounded-full bg-[#1C3A27]/20 border border-[#1C3A27]/40" />
-
-          {/* Scholar Astrolabe Emblem */}
-          <div className="w-12 h-12 rounded-full bg-[#1C3A27] border-2 border-[#B89758] shadow-[0_6px_20px_rgba(0,0,0,0.6)] flex items-center justify-center text-xl">
-            🧭
-          </div>
+          <div className="absolute w-44 h-44 rounded-full bg-teal/15 border border-teal/50 animate-radar" />
+          <div className="absolute w-20 h-20 rounded-full bg-teal/10 border border-teal/30" />
+          <div className="w-6 h-6 rounded-full bg-teal border-[3px] border-white shadow-[0_2px_10px_rgba(18,126,138,0.5)]" />
         </div>
 
-        {/* 8. Interactive Collegiate Wax Seal Venue Markers */}
+        {/* Venue markers */}
         {filteredVenues.map((venue) => {
           const pos = projectCoords(venue.lat, venue.lng);
           const isVisited = visitedVenueIds.includes(venue.id);
           const distance = getDistanceToVenueMeters(venue);
           const isWithinRange = distance <= venue.radiusMeters;
-          const hasEvent = !!venue.featuredEvent;
+          const style = VENUE_STYLE[venue.type];
 
           return (
             <div
@@ -479,54 +368,51 @@ export const ExploreMap: React.FC = () => {
                 sound.playCoin();
                 setSelectedVenue(venue);
               }}
-              style={{
-                left: pos.x,
-                top: pos.y,
-              }}
+              style={{ left: pos.x, top: pos.y }}
               className="absolute z-20 -translate-x-1/2 -translate-y-1/2 cursor-pointer group flex flex-col items-center pointer-events-auto active:scale-95 transition-transform"
             >
-              {/* Event halo */}
-              {hasEvent && (
-                <div className="absolute -inset-3 rounded-full bg-[#B89758]/40 animate-ping pointer-events-none" />
+              {/* In-range pulse */}
+              {isWithinRange && !isVisited && (
+                <div className="absolute top-5 w-12 h-12 rounded-full bg-gold/40 animate-ping pointer-events-none" />
               )}
 
-              {/* Physical Wax Seal Medallion */}
+              {/* Pin */}
               <div
-                className={`relative w-12 h-12 rounded-2xl border-2 flex items-center justify-center shadow-[0_6px_16px_rgba(0,0,0,0.5)] transition-all ${
-                  isVisited
-                    ? 'bg-[#1C3A27] border-[#B89758] text-[#E2CA8E] text-sm font-black shadow-[0_0_15px_rgba(28,58,39,0.5)]'
-                    : isWithinRange
-                    ? 'bg-[#6B1D23] border-[#E2CA8E] text-[#FAF8F5] text-lg scale-110 shadow-[0_0_20px_rgba(184,151,88,0.8)]'
-                    : hasEvent
-                    ? 'bg-[#6B1D23] border-[#B89758] text-[#E2CA8E] text-sm shadow-[0_0_15px_rgba(107,29,35,0.6)]'
-                    : 'bg-[#122419] border-[#B89758]/70 text-[#B89758] text-sm'
+                className={`relative w-10 h-10 rounded-full border-[2.5px] flex items-center justify-center text-base shadow-[0_3px_10px_rgba(0,0,0,0.18)] transition-transform group-hover:scale-110 ${
+                  isVisited ? 'bg-teal-soft opacity-90' : 'bg-white'
                 }`}
+                style={{ borderColor: isVisited ? '#127E8A' : isWithinRange ? GOLD : style.ring }}
               >
-                {isVisited ? '✓' : hasEvent ? '⚡' : '🏛️'}
-
-                {/* Range alert dot */}
-                {isWithinRange && !isVisited && (
-                  <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-[#B89758] border border-[#121A15] animate-bounce" />
+                {style.emoji}
+                {isVisited && (
+                  <span className="absolute -top-1.5 -right-1.5 w-4.5 h-4.5 rounded-full bg-teal text-white flex items-center justify-center border-2 border-white">
+                    <Check className="w-2.5 h-2.5 stroke-[4]" />
+                  </span>
+                )}
+                {venue.featuredEvent && !isVisited && (
+                  <span className="absolute -top-1.5 -right-1.5 w-4.5 h-4.5 rounded-full bg-gold text-white flex items-center justify-center border-2 border-white animate-bounce">
+                    <Zap className="w-2.5 h-2.5 fill-white" />
+                  </span>
                 )}
               </div>
 
-              {/* Parchment Venue Name Placard */}
-              <div className="mt-1 px-2 py-0.5 rounded bg-[#FDF5E6] border border-[#B89758] text-[10px] font-bold text-[#1C3A27] font-display shadow whitespace-nowrap max-w-[125px] truncate group-hover:scale-105 transition">
-                {venue.name.replace('Cambridge University', 'CU').replace('Museum', 'Mus.')}
+              {/* Nameplate */}
+              <div className="mt-1 px-2 py-0.5 rounded-full bg-white border border-line text-[10px] font-bold text-ink font-display shadow-sm whitespace-nowrap max-w-[120px] truncate group-hover:border-vermilion transition">
+                {venue.name.replace('Cambridge University', 'CU')}
               </div>
 
-              {/* Distance Callout */}
-              <div className="text-[9px] font-mono text-[#FAF8F5] bg-[#1C3A27] px-1.5 py-0.2 rounded-full mt-0.5 border border-[#B89758]/60">
-                {distance}m
+              {/* Distance */}
+              <div className="text-[9px] font-mono text-ink bg-white/95 px-1.5 py-0.1 rounded-full mt-0.5 border border-line/70">
+                {isWithinRange ? 'In range' : `${distance}m away`}
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* ================= MAP CONTROLS & HUD OVERLAYS ================= */}
+      {/* ============ OVERLAYS ============ */}
 
-      {/* Top Brass Ribbon Filter Chips */}
+      {/* Filter chips */}
       <div className="absolute top-3 left-0 right-0 z-40 px-3 flex gap-1.5 overflow-x-auto no-scrollbar pointer-events-auto">
         {(['All', 'Museum', 'Gallery', 'Heritage', 'Garden', 'Library'] as const).map((cat) => {
           const isSelected = activeFilter === cat;
@@ -537,95 +423,85 @@ export const ExploreMap: React.FC = () => {
                 triggerHaptic('light');
                 setActiveFilter(cat);
               }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all shadow-md font-display ${
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shadow-sm ${
                 isSelected
-                  ? 'bg-[#1C3A27] text-[#E2CA8E] border border-[#B89758] shadow-[0_2px_8px_rgba(0,0,0,0.4)]'
-                  : 'bg-[#FDF5E6]/95 text-[#1C3A27] border border-[#B89758]/50 hover:bg-[#FDF5E6]'
+                  ? 'bg-ink text-wall'
+                  : 'bg-card text-ink border border-line hover:border-muted'
               }`}
             >
-              {cat === 'All' ? '🏛️ All Archives' : cat}
+              {cat === 'All' ? 'All' : `${cat}s`}
             </button>
           );
         })}
       </div>
 
-      {/* Floating Controls on Right Side (Zoom + Recenter + GPS Sim) */}
-      <div className="absolute right-3 bottom-52 z-40 flex flex-col gap-2">
-        {/* Zoom In */}
+      {/* Map eyebrow */}
+      <div className="absolute top-14 left-3 z-30 pointer-events-none">
+        <span className="px-2.5 py-0.5 rounded-full bg-card/90 border border-line text-[10px] text-muted font-mono tracking-wide backdrop-blur-sm">
+          CAMBRIDGE · PILOT MAP
+        </span>
+      </div>
+
+      {/* Floating controls */}
+      <div className="absolute right-3 bottom-64 z-40 flex flex-col gap-2">
         <button
           onClick={handleZoomIn}
-          title="Zoom In"
-          className="w-10 h-10 rounded-2xl bg-[#1C3A27] border border-[#B89758] text-[#E2CA8E] flex items-center justify-center shadow-lg active:scale-95 transition"
+          title="Zoom in"
+          className="w-10 h-10 rounded-2xl bg-card border border-line text-ink flex items-center justify-center shadow-sm active:scale-95 transition"
         >
           <Plus className="w-4 h-4" />
         </button>
-
-        {/* Zoom Out */}
         <button
           onClick={handleZoomOut}
-          title="Zoom Out"
-          className="w-10 h-10 rounded-2xl bg-[#1C3A27] border border-[#B89758] text-[#E2CA8E] flex items-center justify-center shadow-lg active:scale-95 transition"
+          title="Zoom out"
+          className="w-10 h-10 rounded-2xl bg-card border border-line text-ink flex items-center justify-center shadow-sm active:scale-95 transition"
         >
           <Minus className="w-4 h-4" />
         </button>
-
-        {/* Recenter on Scholar */}
         <button
           onClick={handleRecenter}
-          title="Recenter on my explorer"
-          className="w-10 h-10 rounded-2xl bg-[#1C3A27] border border-[#B89758] text-[#B89758] flex items-center justify-center shadow-lg active:scale-95 transition"
+          title="Recenter on me"
+          className="w-10 h-10 rounded-2xl bg-card border border-line text-teal flex items-center justify-center shadow-sm active:scale-95 transition"
         >
           <Crosshair className="w-5 h-5 stroke-[2.5]" />
         </button>
-
-        {/* GPS Simulation / Teleport Toggle */}
         <button
           onClick={() => setShowSimNotice((prev) => !prev)}
-          title="Simulate GPS presence at venues"
-          className={`w-10 h-10 rounded-2xl border flex items-center justify-center shadow-lg active:scale-95 transition ${
+          title="Demo: simulate your location"
+          className={`w-10 h-10 rounded-2xl border flex items-center justify-center shadow-sm active:scale-95 transition ${
             isSimulatingLocation
-              ? 'bg-[#6B1D23] text-[#FAF8F5] border-[#B89758] shadow-[0_0_12px_rgba(107,29,35,0.7)]'
-              : 'bg-[#1C3A27] border-[#B89758]/60 text-[#D1C7B7]'
+              ? 'bg-vermilion text-white border-vermilion'
+              : 'bg-card border-line text-muted'
           }`}
         >
           <Navigation className="w-4 h-4" />
         </button>
       </div>
 
-      {/* 15-Minute Culture Dose Floating Pill (Oxblood Wax Seal) */}
-      <div className="absolute left-3 bottom-52 z-40">
+      {/* Quick Quest pill */}
+      <div className="absolute left-3 bottom-64 z-40">
         <button
-          onClick={handleQuickDose}
-          className="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-[#6B1D23] border border-[#B89758] text-[#FAF8F5] font-display font-bold text-xs shadow-[0_4px_12px_rgba(0,0,0,0.5)] active:translate-y-0.5 transition tracking-wide"
+          onClick={handleQuickQuest}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-vermilion text-white font-bold text-xs shadow-[0_4px_14px_rgba(226,61,40,0.4)] active:translate-y-0.5 transition"
         >
-          <Zap className="w-4 h-4 text-[#E2CA8E] fill-[#E2CA8E]" />
-          <span>15-Min Scholar Treat</span>
+          <Zap className="w-4 h-4 fill-gold text-gold" />
+          <span>Quick Quest</span>
         </button>
       </div>
 
-      {/* Antiquarian Cambridge Watermark Badge */}
-      <div className="absolute top-12 left-3 z-30 pointer-events-none">
-        <span className="px-2.5 py-0.5 rounded-full bg-[#1C3A27]/90 border border-[#B89758]/50 text-[10px] text-[#D1C7B7] font-display tracking-widest backdrop-blur-md">
-          CANTABRIGIA ARCHIVUM
-        </span>
-      </div>
-
-      {/* GPS Simulation Drawer / Debugger */}
+      {/* Location simulator drawer (demo) */}
       {showSimNotice && (
-        <div className="absolute top-14 left-3 right-3 z-50 p-4 bg-[#1C3A27] border-2 border-[#B89758] rounded-3xl shadow-2xl backdrop-blur-md text-xs text-[#FAF8F5]">
-          <div className="flex items-center justify-between pb-2 border-b border-[#B89758]/40">
-            <span className="font-bold text-[#E2CA8E] font-display flex items-center gap-1.5 text-xs">
-              <Navigation className="w-3.5 h-3.5 text-[#B89758]" /> Geofence Presence Simulator
+        <div className="absolute top-14 left-3 right-3 z-50 p-4 bg-card border border-line rounded-3xl shadow-2xl text-xs text-ink animate-rise">
+          <div className="flex items-center justify-between pb-2 border-b border-line">
+            <span className="font-bold font-display flex items-center gap-1.5 text-xs">
+              <Navigation className="w-3.5 h-3.5 text-teal" /> Location simulator (demo)
             </span>
-            <button
-              onClick={() => setShowSimNotice(false)}
-              className="text-[#D1C7B7] hover:text-white font-bold text-xs"
-            >
+            <button onClick={() => setShowSimNotice(false)} className="text-muted hover:text-ink font-bold text-xs">
               ✕
             </button>
           </div>
-          <p className="text-[11px] text-[#C0CEC5] mt-1.5 font-body">
-            Verify the 75m archival geofence check by teleporting your scholar avatar to any college or museum:
+          <p className="text-[11px] text-muted mt-1.5">
+            Teleport to any venue to unlock its check-in and quests:
           </p>
           <div className="grid grid-cols-2 gap-1.5 mt-2.5 max-h-36 overflow-y-auto">
             {venues.map((v) => (
@@ -635,30 +511,27 @@ export const ExploreMap: React.FC = () => {
                   teleportToVenue(v.id);
                   setShowSimNotice(false);
                 }}
-                className="p-1.5 rounded-xl bg-[#122419] hover:bg-[#234731] border border-[#B89758]/50 text-[10px] font-bold text-left truncate text-[#FAF8F5] font-display"
+                className="p-1.5 rounded-xl bg-wall hover:bg-teal-soft border border-line text-[10px] font-bold text-left truncate text-ink transition"
               >
-                🏛️ {v.name}
+                {VENUE_STYLE[v.type].emoji} {v.name}
               </button>
             ))}
           </div>
-          <div className="mt-2 pt-2 border-t border-[#B89758]/40 flex justify-end">
-            <button
-              onClick={resetUserLocation}
-              className="text-[10px] text-[#E2CA8E] hover:underline font-bold font-display"
-            >
-              Reset to Cambridge Market Center
+          <div className="mt-2 pt-2 border-t border-line flex justify-end">
+            <button onClick={resetUserLocation} className="text-[10px] text-teal hover:underline font-bold">
+              Reset to Cambridge centre
             </button>
           </div>
         </div>
       )}
 
-      {/* Bottom Sheet "Nearby Now" Tray (Parchment Cards) */}
-      <div className="absolute bottom-14 left-0 right-0 z-40 px-3 pb-2 pointer-events-auto">
+      {/* Nearby rail */}
+      <div className="absolute bottom-24 left-0 right-0 z-40 px-3 pb-2 pointer-events-auto">
         <div className="flex items-center justify-between mb-1.5 px-1">
-          <span className="text-[10px] font-bold text-[#D1C7B7] uppercase tracking-widest font-display flex items-center gap-1">
-            <Compass className="w-3.5 h-3.5 text-[#B89758]" /> Proximate Archives ({filteredVenues.length})
+          <span className="text-[10px] font-bold text-muted uppercase tracking-widest font-display flex items-center gap-1">
+            <MapPin className="w-3.5 h-3.5 text-vermilion" /> Nearby ({filteredVenues.length})
           </span>
-          <span className="text-[10px] text-[#E2CA8E] font-medium font-body italic">Tap archive to inspect</span>
+          <span className="text-[10px] text-muted">Tap a card to see quests</span>
         </div>
 
         <div className="flex gap-2.5 overflow-x-auto no-scrollbar pb-1">
@@ -666,7 +539,7 @@ export const ExploreMap: React.FC = () => {
             const distance = getDistanceToVenueMeters(venue);
             const isWithinRange = distance <= venue.radiusMeters;
             const isVisited = visitedVenueIds.includes(venue.id);
-            const walkMin = Math.max(1, Math.round(distance / 80));
+            const style = VENUE_STYLE[venue.type];
 
             return (
               <button
@@ -675,17 +548,15 @@ export const ExploreMap: React.FC = () => {
                   triggerHaptic('light');
                   setSelectedVenue(venue);
                 }}
-                className={`flex-shrink-0 w-64 p-3 rounded-2xl border text-left transition-all parchment-card ${
-                  isWithinRange
-                    ? 'border-2 border-[#6B1D23] shadow-[0_6px_20px_rgba(107,29,35,0.3)]'
-                    : 'border border-[#B89758]/50 hover:border-[#B89758]'
+                className={`flex-shrink-0 w-64 p-3 rounded-2xl border text-left transition-all bg-card shadow-sm ${
+                  isWithinRange ? 'border-2 border-gold' : 'border-line hover:border-muted'
                 }`}
               >
                 <div className="flex items-start gap-2.5">
-                  <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 border border-[#B89758]/60 relative">
+                  <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 border border-line relative">
                     <img src={venue.image} alt={venue.name} className="w-full h-full object-cover" />
                     {isVisited && (
-                      <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-[#1C3A27] text-[10px] text-[#E2CA8E] flex items-center justify-center font-bold border border-[#B89758]">
+                      <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-teal text-white text-[10px] flex items-center justify-center font-bold border border-white">
                         ✓
                       </div>
                     )}
@@ -693,38 +564,37 @@ export const ExploreMap: React.FC = () => {
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-[#1C3A27] text-[#E2CA8E] font-display uppercase tracking-wider">
-                        {venue.type}
-                      </span>
                       <span
-                        className={`text-[10px] font-mono font-bold ${
-                          isWithinRange ? 'text-[#6B1D23] font-black' : 'text-[#544431]'
-                        }`}
+                        className="text-[9px] font-bold px-1.5 py-0.2 rounded-full uppercase tracking-wider"
+                        style={{ backgroundColor: style.ring + '18', color: style.ring }}
                       >
-                        {distance}m • {walkMin}m
+                        {style.label}
+                      </span>
+                      <span className={`text-[10px] font-mono font-bold ${isWithinRange ? 'text-vermilion' : 'text-muted'}`}>
+                        {distance}m
                       </span>
                     </div>
 
-                    <h4 className="text-xs font-bold text-[#1A281F] font-display truncate mt-1">
-                      {venue.name}
-                    </h4>
+                    <h4 className="text-xs font-bold text-ink font-display truncate mt-1">{venue.name}</h4>
 
-                    <div className="flex items-center gap-2 mt-1 text-[10px] font-body text-[#3B4E41]">
-                      <span className="text-[#6B1D23] font-bold flex items-center gap-0.5">
-                        <Sparkles className="w-3 h-3 text-[#B89758]" /> +50 pts
+                    <div className="flex items-center gap-2 mt-1 text-[10px] text-muted">
+                      <span className="text-gold font-bold flex items-center gap-0.5">
+                        <Sparkles className="w-3 h-3" /> +{isVisited ? 50 : 100} pts
                       </span>
                       <span>•</span>
-                      <span>{venue.isFree ? 'Free Admission' : venue.entryFee}</span>
+                      <span className="flex items-center gap-0.5">
+                        <Clock className="w-3 h-3" /> {venue.isFree ? 'Free' : venue.entryFee}
+                      </span>
                     </div>
                   </div>
                 </div>
 
                 {venue.featuredEvent && (
-                  <div className="mt-2 pt-1.5 border-t border-[#B89758]/30 flex items-center justify-between text-[10px] font-body">
-                    <span className="text-[#6B1D23] font-bold flex items-center gap-1">
-                      <Flame className="w-3 h-3 text-[#B89758]" /> {venue.featuredEvent.title}
+                  <div className="mt-2 pt-1.5 border-t border-line flex items-center justify-between text-[10px]">
+                    <span className="text-vermilion font-bold flex items-center gap-1">
+                      <Flame className="w-3 h-3" /> {venue.featuredEvent.title}
                     </span>
-                    <span className="text-[#544431] font-mono">{venue.featuredEvent.endsIn}</span>
+                    <span className="text-muted font-mono">{venue.featuredEvent.endsIn}</span>
                   </div>
                 )}
               </button>

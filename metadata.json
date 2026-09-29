@@ -1,6 +1,6 @@
 {
   "name": "CultureQuest",
-  "description": "A Pokémon GO-style mobile app for cultural discovery in Cambridge: explore maps, check in at museums, complete challenges, and earn real rewards.",
+  "description": "A Pokémon GO-style mobile app for cultural discovery in Cambridge: explore a map of museums and culture spots, check in, complete quests, collect cards, and turn points into vouchers at local shops.",
   "requestFramePermissions": ["geolocation", "camera"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

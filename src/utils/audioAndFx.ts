@@ -143,21 +143,21 @@ export function fireConfetti(tier: 'normal' | 'legendary' | 'levelup' = 'normal'
       particleCount: 100,
       spread: 80,
       origin: { y: 0.6 },
-      colors: ['#f59e0b', '#fde047', '#ff7e67', '#ec4899', '#8b5cf6'],
+      colors: ['#F2A71B', '#E23D28', '#127E8A', '#9DBF8A', '#FFC53D'],
     });
   } else if (tier === 'levelup') {
     confetti({
       particleCount: 80,
       spread: 100,
       origin: { y: 0.5 },
-      colors: ['#10b981', '#34d399', '#f59e0b', '#3b82f6'],
+      colors: ['#F2A71B', '#E23D28', '#127E8A', '#FFC53D'],
     });
   } else {
     confetti({
       particleCount: 45,
       spread: 60,
       origin: { y: 0.7 },
-      colors: ['#f59e0b', '#fbbf24', '#ff7e67', '#34d399'],
+      colors: ['#F2A71B', '#E23D28', '#127E8A', '#9DBF8A'],
     });
   }
 }

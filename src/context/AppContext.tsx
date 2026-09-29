@@ -7,6 +7,7 @@ import {
   PartnerReward,
   RedeemedVoucher,
   ExplorerClass,
+  Booking,
 } from '../types';
 import {
   CAMBRIDGE_CENTER,
@@ -28,13 +29,15 @@ interface AppContextType {
   completedQuestIds: string[];
   collectedCardIds: string[];
   redeemedVouchers: RedeemedVoucher[];
+  startedQuestIds: string[];
+  bookings: Booking[];
   userLocation: { lat: number; lng: number };
   isSimulatingLocation: boolean;
   selectedVenue: Venue | null;
   activePlayingQuest: Quest | null;
   activeInspectCard: CollectibleCard | null;
   activeVoucherModal: RedeemedVoucher | null;
-  activeCheckinSuccess: { venue: Venue; pointsEarned: number; newCard?: CollectibleCard } | null;
+  activeCheckinSuccess: { venue: Venue; pointsEarned: number; newCard?: CollectibleCard; source: 'checkin' | 'quest' | 'booking' } | null;
   activeLevelUpModal: { oldLevel: number; newLevel: number; newTitle: string } | null;
   partnerMode: 'user' | 'museum' | 'business';
   
@@ -44,15 +47,18 @@ interface AppContextType {
   setActivePlayingQuest: (quest: Quest | null) => void;
   setActiveInspectCard: (card: CollectibleCard | null) => void;
   setActiveVoucherModal: (voucher: RedeemedVoucher | null) => void;
-  setActiveCheckinSuccess: (data: { venue: Venue; pointsEarned: number; newCard?: CollectibleCard } | null) => void;
+  setActiveCheckinSuccess: (data: { venue: Venue; pointsEarned: number; newCard?: CollectibleCard; source: 'checkin' | 'quest' | 'booking' } | null) => void;
   setActiveLevelUpModal: (data: { oldLevel: number; newLevel: number; newTitle: string } | null) => void;
   setPartnerMode: (mode: 'user' | 'museum' | 'business') => void;
   
   // Gameplay Actions
   checkInVenue: (venueId: string, method: 'gps' | 'qr') => { success: boolean; message: string; points?: number };
+  bookVisit: (venueId: string, details: { date: string; time: string; tickets: number }) => void;
+  markQuestStarted: (questId: string) => void;
   completeQuest: (questId: string) => void;
   redeemReward: (rewardId: string) => { success: boolean; message: string; voucher?: RedeemedVoucher };
   markVoucherUsed: (voucherId: string) => void;
+  expireVoucher: (voucherId: string) => void;
   teleportToVenue: (venueId: string) => void;
   resetUserLocation: () => void;
   setUserGpsLocation: (coords: { lat: number; lng: number }) => void;
@@ -86,8 +92,8 @@ const DEFAULT_USER: UserProfile = {
   level: 2,
   xp: 140,
   xpToNextLevel: 250,
-  points: 210, // Starting balance allows testing rewards early
-  streak: 3,
+  points: 340, // Enough for an instant voucher demo after one quest
+  streak: 4,
   streakFreezeTokens: 1,
   interests: ['Art', 'History', 'Science'],
   title: 'Gallery Wanderer',
@@ -175,6 +181,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return [];
   });
 
+  const [startedQuestIds, setStartedQuestIds] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(`${STORAGE_KEY}_started_quests`);
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // ignore
+    }
+    return [];
+  });
+
+  const [bookings, setBookings] = useState<Booking[]>(() => {
+    try {
+      const saved = localStorage.getItem(`${STORAGE_KEY}_bookings`);
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // ignore
+    }
+    return [];
+  });
+
   // User location: defaults to Cambridge market square near Fitzwilliam & King's
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number }>({
     lat: 52.2036,
@@ -191,6 +217,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     venue: Venue;
     pointsEarned: number;
     newCard?: CollectibleCard;
+    source: 'checkin' | 'quest' | 'booking';
   } | null>(null);
   const [activeLevelUpModal, setActiveLevelUpModal] = useState<{
     oldLevel: number;
@@ -215,10 +242,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       localStorage.setItem(`${STORAGE_KEY}_completed_quests`, JSON.stringify(completedQuestIds));
       localStorage.setItem(`${STORAGE_KEY}_collected_cards`, JSON.stringify(collectedCardIds));
       localStorage.setItem(`${STORAGE_KEY}_vouchers`, JSON.stringify(redeemedVouchers));
+      localStorage.setItem(`${STORAGE_KEY}_started_quests`, JSON.stringify(startedQuestIds));
+      localStorage.setItem(`${STORAGE_KEY}_bookings`, JSON.stringify(bookings));
     } catch {
       // ignore
     }
-  }, [visitedVenueIds, completedQuestIds, collectedCardIds, redeemedVouchers]);
+  }, [visitedVenueIds, completedQuestIds, collectedCardIds, redeemedVouchers, startedQuestIds, bookings]);
 
   // Request browser geolocation once if not in simulation mode
   useEffect(() => {
@@ -308,7 +337,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         xp: newXp,
         level: newLevel,
         xpToNextLevel: newXpToNext,
-        points: prev.points + pointsAmount,
+        // +50 point level-up bonus, granted for real so the modal isn't lying
+        points: prev.points + pointsAmount + (leveledUp ? 50 : 0),
         title: newTitle,
         stepsWalked: prev.stepsWalked + Math.floor(Math.random() * 180) + 120,
       };
@@ -356,6 +386,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       venue,
       pointsEarned,
       newCard: droppedCard,
+      source: 'checkin',
     });
 
     return {
@@ -365,14 +396,49 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   };
 
-  // Complete a quest
+  // Book a visit at a paid venue — earns points instantly (pitch mode).
+  const bookVisit = (venueId: string, details: { date: string; time: string; tickets: number }) => {
+    const venue = venues.find(v => v.id === venueId);
+    if (!venue) return;
+
+    const booking: Booking = {
+      id: 'bk-' + Date.now(),
+      venueId,
+      date: details.date,
+      time: details.time,
+      tickets: details.tickets,
+      createdAt: Date.now(),
+    };
+    setBookings(prev => [booking, ...prev]);
+
+    addXpAndPoints(40, 60);
+
+    sound.playCoin();
+    fireConfetti('normal');
+    triggerHaptic('success');
+
+    setActiveCheckinSuccess({
+      venue,
+      pointsEarned: 60,
+      source: 'booking',
+    });
+  };
+
+  // Remember that a quest was opened, so Home can say "Continue your hunt"
+  const markQuestStarted = (questId: string) => {
+    setStartedQuestIds(prev => (prev.includes(questId) ? prev : [...prev, questId]));
+  };
+
+  // Complete a quest — rewards are one-time only; replays just close.
   const completeQuest = (questId: string) => {
     const quest = quests.find(q => q.id === questId);
     if (!quest) return;
 
-    if (!completedQuestIds.includes(questId)) {
-      setCompletedQuestIds(prev => [...prev, questId]);
+    if (completedQuestIds.includes(questId)) {
+      setActivePlayingQuest(null);
+      return;
     }
+    setCompletedQuestIds(prev => [...prev, questId]);
 
     // Drop card if guaranteed or random from venue
     let droppedCard: CollectibleCard | undefined;
@@ -401,6 +467,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         venue,
         pointsEarned: quest.pointsReward,
         newCard: droppedCard,
+        source: 'quest',
       });
     }
 
@@ -461,6 +528,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const expireVoucher = (voucherId: string) => {
+    setRedeemedVouchers(prev =>
+      prev.map(v => (v.id === voucherId && v.status === 'active' ? { ...v, status: 'expired' } : v))
+    );
+    if (activeVoucherModal && activeVoucherModal.id === voucherId) {
+      setActiveVoucherModal(prev => (prev ? { ...prev, status: 'expired' } : null));
+    }
+  };
+
   const completeOnboarding = (data: {
     name: string;
     explorerClass: ExplorerClass;
@@ -486,6 +562,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.removeItem(`${STORAGE_KEY}_completed_quests`);
     localStorage.removeItem(`${STORAGE_KEY}_collected_cards`);
     localStorage.removeItem(`${STORAGE_KEY}_vouchers`);
+    localStorage.removeItem(`${STORAGE_KEY}_started_quests`);
+    localStorage.removeItem(`${STORAGE_KEY}_bookings`);
 
     setUser({
       ...DEFAULT_USER,
@@ -495,6 +573,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCompletedQuestIds([]);
     setCollectedCardIds(['card-whipple-astrolabe']);
     setRedeemedVouchers([]);
+    setStartedQuestIds([]);
+    setBookings([]);
     resetUserLocation();
   };
 
@@ -554,6 +634,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         completedQuestIds,
         collectedCardIds,
         redeemedVouchers,
+        startedQuestIds,
+        bookings,
         userLocation,
         isSimulatingLocation,
         selectedVenue,
@@ -572,9 +654,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setActiveLevelUpModal,
         setPartnerMode,
         checkInVenue,
+        bookVisit,
+        markQuestStarted,
         completeQuest,
         redeemReward,
         markVoucherUsed,
+        expireVoucher,
         teleportToVenue,
         resetUserLocation,
         setUserGpsLocation,

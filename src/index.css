@@ -1,17 +1,28 @@
 @import "tailwindcss";
 
-@layer utilities {
-  /* Fonts */
-  .font-display {
-    font-family: 'Cinzel', serif;
-  }
-  .font-body {
-    font-family: 'EB Garamond', Georgia, serif;
-  }
-  .font-mono {
-    font-family: 'JetBrains Mono', monospace;
-  }
+@theme {
+  /* CultureQuest palette — gallery wall, ticket vermilion, river teal, points gold */
+  --color-wall: #F5F6F0;
+  --color-card: #FFFFFF;
+  --color-ink: #1D1C16;
+  --color-muted: #6E6B5C;
+  --color-line: #E5E3D4;
+  --color-vermilion: #E23D28;
+  --color-vermilion-dark: #C22F1C;
+  --color-vermilion-soft: #FBEAE5;
+  --color-teal: #127E8A;
+  --color-teal-soft: #E0F0F1;
+  --color-gold: #F2A71B;
+  --color-gold-soft: #FDF2D8;
+  --color-leaf: #9DBF8A;
+  --color-sky: #A9D3E4;
 
+  --font-display: 'Archivo', system-ui, sans-serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+@layer utilities {
   /* Safe area padding */
   .pb-safe {
     padding-bottom: max(1rem, env(safe-area-inset-bottom, 1rem));
@@ -19,8 +30,8 @@
   .pt-safe {
     padding-top: max(0.5rem, env(safe-area-inset-top, 0.5rem));
   }
-  
-  /* Hide scrollbars for slick mobile trays */
+
+  /* Hide scrollbars for horizontal trays */
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
@@ -29,7 +40,7 @@
     scrollbar-width: none;
   }
 
-  /* 3D card perspective for Pokédex artefact card flip */
+  /* 3D card flip for collectible inspect */
   .perspective-1000 {
     perspective: 1000px;
   }
@@ -42,48 +53,87 @@
   .rotate-y-180 {
     transform: rotateY(180deg);
   }
-
-  /* Parchment Card Textures & Shadows */
-  .parchment-card {
-    background-color: #FDF5E6;
-    color: #1A281F;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), inset 0 0 16px rgba(184, 151, 88, 0.15);
-  }
-
-  .parchment-deckled {
-    border: 1px solid rgba(184, 151, 88, 0.4);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), inset 0 0 12px rgba(197, 160, 89, 0.12);
-  }
-
-  /* Wax Seal Crimson Button */
-  .btn-wax-seal {
-    background: linear-gradient(135deg, #7A1F26 0%, #541419 100%);
-    border: 1px solid #992830;
-    box-shadow: 0 4px 0 #330A0E, 0 6px 12px rgba(0, 0, 0, 0.4);
-  }
-  .btn-wax-seal:active {
-    transform: translateY(2px);
-    box-shadow: 0 2px 0 #330A0E, 0 3px 6px rgba(0, 0, 0, 0.4);
-  }
-
-  /* Brass Accent Ribbon */
-  .brass-border {
-    border-color: #B89758;
-  }
 }
 
-/* Radar pulse ripple for avatar & venue events */
-@keyframes radar-pulse {
+/* ============ Pitch presentation backdrop (desktop shell) ============ */
+.pitch-backdrop {
+  background-color: #ecece0;
+  background-image: radial-gradient(#d5d6c2 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* ============ Ticket stub ============ */
+/* A quest or voucher rendered as an admission ticket:
+   main body, perforated divider with side notches, and a detachable stub. */
+.ticket {
+  position: relative;
+  background: var(--color-card);
+}
+
+.ticket-perf {
+  position: relative;
+  height: 0;
+  border-top: 2px dashed var(--color-line);
+}
+
+/* Side notches — circles painted the wall colour so they read as cut-outs */
+.ticket-perf::before,
+.ticket-perf::after {
+  content: '';
+  position: absolute;
+  top: -10px;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background: var(--color-wall);
+  border: 1px solid var(--color-line);
+  box-sizing: border-box;
+}
+.ticket-perf::before {
+  left: -11px;
+}
+.ticket-perf::after {
+  right: -11px;
+}
+
+/* ============ Rubber stamp moment ============ */
+@keyframes stamp-in {
   0% {
-    transform: scale(0.6);
-    opacity: 0.8;
+    transform: scale(2.4) rotate(-22deg);
+    opacity: 0;
+  }
+  55% {
+    transform: scale(0.9) rotate(-7deg);
+    opacity: 1;
   }
   100% {
-    transform: scale(2.4);
+    transform: scale(1) rotate(-8deg);
+    opacity: 1;
+  }
+}
+.animate-stamp {
+  animation: stamp-in 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.4) 0.2s both;
+}
+
+@keyframes stamp-fade {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-rise {
+  animation: stamp-fade 0.3s ease-out both;
+}
+
+/* Radar pulse around the player marker on the map */
+@keyframes radar-pulse {
+  0% {
+    transform: scale(0.55);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(2.3);
     opacity: 0;
   }
 }
-
 .animate-radar {
   animation: radar-pulse 2.4s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
 }
@@ -96,8 +146,15 @@
     transform: translateY(-5px);
   }
 }
-
 .animate-float {
   animation: float-subtle 3s ease-in-out infinite;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .animate-stamp,
+  .animate-rise,
+  .animate-radar,
+  .animate-float {
+    animation: none;
+  }
+}

@@ -114,6 +114,15 @@ export interface PartnerReward {
   sponsorBadge?: string;
 }
 
+export interface Booking {
+  id: string;
+  venueId: string;
+  date: string;
+  time: string;
+  tickets: number;
+  createdAt: number;
+}
+
 export interface RedeemedVoucher {
   id: string;
   rewardId: string;
