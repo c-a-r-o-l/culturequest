@@ -2,25 +2,25 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { INITIAL_LEADERBOARD, INITIAL_ACTIVITY_FEED } from '../../data/mockData';
 import {
-  User,
   Settings,
-  Trophy,
   Flame,
   Footprints,
   PoundSterling,
   Sparkles,
   Users,
   Compass,
-  CheckCircle2,
   Volume2,
   VolumeX,
-  RotateCcw,
   Building2,
   Coffee,
   Shield,
+  BookOpen,
+  Scroll,
+  Award,
+  Feather,
   X,
 } from 'lucide-react';
-import { sound, triggerHaptic, fireConfetti } from '../../utils/audioAndFx';
+import { sound, triggerHaptic } from '../../utils/audioAndFx';
 
 export const ProfileView: React.FC<{ onOpenOnboarding: () => void }> = ({ onOpenOnboarding }) => {
   const {
@@ -44,7 +44,7 @@ export const ProfileView: React.FC<{ onOpenOnboarding: () => void }> = ({ onOpen
   };
 
   const handleResetData = () => {
-    if (confirm('Reset your profile, visited venues and collected artefacts back to initial state?')) {
+    if (confirm('Reset your scholar dossier, visited archives and folios back to initial state?')) {
       resetAllProgress();
       setShowSettings(false);
     }
@@ -52,165 +52,149 @@ export const ProfileView: React.FC<{ onOpenOnboarding: () => void }> = ({ onOpen
 
   return (
     <div className="pb-24 pt-3 px-4 max-w-md mx-auto space-y-4">
-      {/* Profile Card */}
-      <div className="p-5 rounded-3xl bg-gradient-to-b from-indigo-950/90 via-slate-900 to-slate-950 border border-indigo-500/30 shadow-xl relative overflow-hidden">
+      {/* Scholar's Dossier Card */}
+      <div className="p-5 rounded-3xl bg-[#1C3A27] border-2 border-[#B89758] shadow-xl relative overflow-hidden">
         <div className="absolute top-4 right-4">
           <button
             onClick={() => {
               triggerHaptic('light');
               setShowSettings(true);
             }}
-            className="w-9 h-9 rounded-2xl bg-slate-900 border border-slate-700/80 text-slate-300 flex items-center justify-center hover:text-white"
+            className="w-8 h-8 rounded-xl bg-[#122419] border border-[#B89758]/60 text-[#D1C7B7] flex items-center justify-center hover:text-white"
           >
-            <Settings className="w-4 h-4" />
+            <Settings className="w-4 h-4 text-[#B89758]" />
           </button>
         </div>
 
         <div className="flex items-center gap-4">
           <div className="relative">
-            <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-amber-400 to-rose-500 p-1 shadow-lg">
-              <div className="w-full h-full bg-slate-950 rounded-[22px] flex items-center justify-center text-3xl">
-                {user.avatar}
-              </div>
+            <div className="w-16 h-16 rounded-2xl bg-[#122419] border-2 border-[#B89758] p-1 shadow-lg flex items-center justify-center">
+              <span className="text-3xl">{user.avatar}</span>
             </div>
-            <span className="absolute -bottom-1 -right-1 px-2 py-0.5 bg-amber-400 text-slate-950 font-black text-[11px] rounded-full shadow border border-slate-950">
-              L{user.level}
+            <span className="absolute -bottom-1 -right-1 px-1.5 py-0.2 bg-[#6B1D23] text-[#FAF8F5] font-mono font-bold text-[9px] rounded-full border border-[#B89758]">
+              V{user.level}
             </span>
           </div>
 
           <div>
-            <h2 className="text-xl font-black text-white font-['Outfit']">{user.name}</h2>
+            <h2 className="text-lg font-bold text-[#FAF8F5] font-display">{user.name}</h2>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="text-xs font-bold text-amber-300">{user.title}</span>
-              <span className="text-slate-500">•</span>
-              <span className="text-xs text-indigo-300">{user.explorerClass} Class</span>
+              <span className="text-xs font-display font-bold text-[#E2CA8E]">{user.title}</span>
+              <span className="text-[#879B8E]">•</span>
+              <span className="text-xs font-body italic text-[#C0CEC5]">{user.explorerClass}</span>
             </div>
-            <div className="text-[11px] text-slate-400 mt-1">Cambridge Explorer #4892</div>
+            <div className="text-[10px] font-mono text-[#A6BAAE] mt-1">Cantabrigia Scholar ID #4892</div>
           </div>
         </div>
 
         {/* Level XP Bar */}
-        <div className="mt-4 pt-3 border-t border-slate-800">
-          <div className="flex items-center justify-between text-[11px] text-slate-300 font-semibold mb-1">
-            <span>Progress to Level {user.level + 1}</span>
-            <span className="text-amber-400 font-mono">
+        <div className="mt-4 pt-3 border-t border-[#B89758]/30">
+          <div className="flex items-center justify-between text-[10px] text-[#D1C7B7] font-display mb-1">
+            <span>Promotion to Scholar Rank {user.level + 1}</span>
+            <span className="text-[#E2CA8E] font-mono">
               {user.xp} / {user.xpToNextLevel} XP
             </span>
           </div>
-          <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+          <div className="h-2 w-full bg-[#0F1B13] rounded-full overflow-hidden border border-[#B89758]/30">
             <div
-              className="h-full bg-gradient-to-r from-indigo-500 via-amber-400 to-amber-300 transition-all duration-500"
+              className="h-full bg-gradient-to-r from-[#B89758] to-[#E2CA8E] transition-all duration-500"
               style={{ width: `${Math.min(100, Math.round((user.xp / user.xpToNextLevel) * 100))}%` }}
             />
           </div>
         </div>
       </div>
 
-      {/* Explorer Stats Grid */}
+      {/* Explorer Stats Grid (Parchment Texture Cards) */}
       <div className="grid grid-cols-2 gap-2.5">
-        <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
+        <div className="p-3.5 rounded-2xl parchment-card border border-[#B89758]/50 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#1C3A27] text-[#E2CA8E] flex items-center justify-center shrink-0 border border-[#B89758]">
             <Compass className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-lg font-black text-white">{visitedVenueIds.length}</div>
-            <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Venues Visited</div>
+            <div className="text-lg font-bold text-[#1C3A27] font-mono">{visitedVenueIds.length}</div>
+            <div className="text-[9px] text-[#544431] uppercase font-display font-bold">Archives Visited</div>
           </div>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
-            <Sparkles className="w-5 h-5" />
+        <div className="p-3.5 rounded-2xl parchment-card border border-[#B89758]/50 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#6B1D23] text-[#FAF8F5] flex items-center justify-center shrink-0 border border-[#B89758]">
+            <Scroll className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-lg font-black text-white">{completedQuestIds.length}</div>
-            <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Quests Solved</div>
+            <div className="text-lg font-bold text-[#1C3A27] font-mono">{completedQuestIds.length}</div>
+            <div className="text-[9px] text-[#544431] uppercase font-display font-bold">Treatises Solved</div>
           </div>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
+        <div className="p-3.5 rounded-2xl parchment-card border border-[#B89758]/50 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#1C3A27] text-[#E2CA8E] flex items-center justify-center shrink-0 border border-[#B89758]">
             <Footprints className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-lg font-black text-white">{user.stepsWalked.toLocaleString()}</div>
-            <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Culture Steps</div>
+            <div className="text-lg font-bold text-[#1C3A27] font-mono">{user.stepsWalked.toLocaleString()}</div>
+            <div className="text-[9px] text-[#544431] uppercase font-display font-bold">Scholar Steps</div>
           </div>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+        <div className="p-3.5 rounded-2xl parchment-card border border-[#B89758]/50 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#6B1D23] text-[#FAF8F5] flex items-center justify-center shrink-0 border border-[#B89758]">
             <PoundSterling className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-lg font-black text-white">£{user.localSavingsGbp.toFixed(2)}</div>
-            <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Saved Locally</div>
+            <div className="text-lg font-bold text-[#1C3A27] font-mono">£{user.localSavingsGbp.toFixed(2)}</div>
+            <div className="text-[9px] text-[#544431] uppercase font-display font-bold">Saved Locally</div>
           </div>
         </div>
       </div>
 
-      {/* Streak Calendar & Freeze Token */}
-      <div className="p-4 rounded-3xl bg-slate-900/80 border border-slate-800 space-y-3">
+      {/* Streak Chronicle & Freeze Token */}
+      <div className="p-4 rounded-3xl bg-[#1C3A27] border border-[#B89758]/60 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Flame className="w-5 h-5 fill-amber-400 text-rose-500" />
-            <h3 className="text-sm font-black text-white">Daily Discovery Streak</h3>
+            <Flame className="w-5 h-5 fill-[#E2CA8E] text-[#B89758]" />
+            <h3 className="text-xs font-bold text-[#FAF8F5] font-display">Academic Streak Chronicle</h3>
           </div>
-          <span className="text-xs font-black text-amber-400">{user.streak} Days Strong</span>
+          <span className="text-xs font-mono font-bold text-[#E2CA8E]">{user.streak} Days Strong</span>
         </div>
 
-        <div className="grid grid-cols-7 gap-1 text-center">
+        <div className="grid grid-cols-7 gap-1 text-center font-display">
           {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => {
             const isFilled = i < user.streak;
             return (
               <div key={i} className="flex flex-col items-center gap-1">
                 <div
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-xs transition ${
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs transition ${
                     isFilled
-                      ? 'bg-gradient-to-tr from-amber-400 to-rose-500 text-slate-950 shadow-md'
-                      : 'bg-slate-800 text-slate-500'
+                      ? 'bg-[#6B1D23] border border-[#B89758] text-[#FAF8F5]'
+                      : 'bg-[#122419] border border-[#1C3A27] text-[#879B8E]'
                   }`}
                 >
                   {isFilled ? '🔥' : '•'}
                 </div>
-                <span className="text-[10px] font-bold text-slate-400">{day}</span>
+                <span className="text-[9px] font-bold text-[#A6BAAE]">{day}</span>
               </div>
             );
           })}
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t border-slate-800 text-xs text-slate-400">
-          <span>Streak Freeze Tokens Available:</span>
-          <span className="px-2 py-0.5 rounded-full bg-indigo-950 text-indigo-300 font-bold border border-indigo-800">
+        <div className="flex items-center justify-between pt-2 border-t border-[#B89758]/30 text-xs text-[#D1C7B7] font-body">
+          <span>Streak Freeze Seals Available:</span>
+          <span className="px-2 py-0.5 rounded-full bg-[#122419] text-[#E2CA8E] font-bold border border-[#B89758]/60 font-mono">
             {user.streakFreezeTokens} Token 🛡️
           </span>
         </div>
       </div>
 
-      {/* Team Quests Banner */}
-      <div className="p-4 rounded-3xl bg-indigo-950/60 border border-indigo-500/40 space-y-2">
-        <div className="flex items-center justify-between">
-          <span className="text-[10px] font-black uppercase tracking-wider text-indigo-300 flex items-center gap-1">
-            <Users className="w-3.5 h-3.5" /> Team Quest (Co-op)
-          </span>
-          <span className="text-[10px] text-amber-400 font-bold">+500 pts shared prize</span>
-        </div>
-        <h4 className="text-sm font-black text-white">The Cambridge Polymath Trail</h4>
-        <p className="text-xs text-slate-300">
-          You and 2 friends need to visit 3 museums before Sunday. Progress: <strong>2/3 Venues</strong>.
-        </p>
-      </div>
-
-      {/* Cambridge Leaderboards */}
+      {/* Collegiate Leaderboards */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-black text-white flex items-center gap-1.5 font-['Outfit']">
-            <Trophy className="w-4 h-4 text-amber-400" /> Cambridge Leaderboard
+          <h3 className="text-xs font-bold text-[#FAF8F5] flex items-center gap-1.5 font-display uppercase tracking-widest">
+            <Award className="w-4 h-4 text-[#B89758]" /> Collegiate Fellowships
           </h3>
-          <span className="text-[10px] text-slate-400">Resets in 3 days</span>
+          <span className="text-[10px] text-[#A6BAAE] font-mono">Resets in 3 days</span>
         </div>
 
-        <div className="flex rounded-2xl bg-slate-900 p-1 border border-slate-800">
+        <div className="flex rounded-2xl bg-[#1C3A27] p-1 border border-[#B89758]/60">
           {(['weekly', 'alltime', 'friends'] as const).map((tab) => (
             <button
               key={tab}
@@ -218,8 +202,10 @@ export const ProfileView: React.FC<{ onOpenOnboarding: () => void }> = ({ onOpen
                 triggerHaptic('light');
                 setActiveLeaderboardTab(tab);
               }}
-              className={`flex-1 py-1.5 text-xs font-bold rounded-xl capitalize transition ${
-                activeLeaderboardTab === tab ? 'bg-amber-400 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
+              className={`flex-1 py-1.5 text-[11px] font-display font-bold uppercase tracking-wider rounded-xl transition ${
+                activeLeaderboardTab === tab
+                  ? 'bg-[#122419] text-[#E2CA8E] border border-[#B89758]'
+                  : 'text-[#879B8E] hover:text-[#FAF8F5]'
               }`}
             >
               {tab === 'weekly' ? 'Weekly League' : tab}
@@ -227,31 +213,31 @@ export const ProfileView: React.FC<{ onOpenOnboarding: () => void }> = ({ onOpen
           ))}
         </div>
 
-        <div className="rounded-3xl bg-slate-900/80 border border-slate-800 divide-y divide-slate-800/80 overflow-hidden">
+        <div className="rounded-3xl parchment-card border border-[#B89758] divide-y divide-[#B89758]/30 overflow-hidden">
           {INITIAL_LEADERBOARD.map((item) => (
             <div
               key={item.rank}
               className={`p-3 flex items-center justify-between ${
-                item.isUser ? 'bg-indigo-950/80 border-l-4 border-amber-400 font-bold' : ''
+                item.isUser ? 'bg-[#1C3A27] text-[#FAF8F5]' : 'text-[#1C3A27]'
               }`}
             >
               <div className="flex items-center gap-3">
-                <span className={`w-5 text-center text-xs font-black ${item.rank <= 3 ? 'text-amber-400' : 'text-slate-500'}`}>
+                <span className={`w-5 text-center text-xs font-mono font-bold ${item.rank <= 3 ? 'text-[#B89758]' : 'text-[#879B8E]'}`}>
                   {item.rank <= 3 ? `🥇🥈🥉`[item.rank - 1] : `#${item.rank}`}
                 </span>
                 <span className="text-lg">{item.avatar}</span>
                 <div>
-                  <div className="text-xs font-bold text-white flex items-center gap-1">
+                  <div className={`text-xs font-bold font-display flex items-center gap-1 ${item.isUser ? 'text-[#FAF8F5]' : 'text-[#1C3A27]'}`}>
                     <span>{item.name}</span>
                     {item.isUser && (
-                      <span className="text-[9px] px-1.5 rounded bg-amber-400 text-slate-950 font-black">YOU</span>
+                      <span className="text-[8px] px-1.5 rounded bg-[#6B1D23] text-[#FAF8F5] font-mono">YOU</span>
                     )}
                   </div>
-                  <div className="text-[10px] text-slate-400">{item.title}</div>
+                  <div className={`text-[10px] font-body italic ${item.isUser ? 'text-[#D1C7B7]' : 'text-[#544431]'}`}>{item.title}</div>
                 </div>
               </div>
 
-              <div className="text-xs font-mono font-black text-amber-300">
+              <div className={`text-xs font-mono font-bold ${item.isUser ? 'text-[#E2CA8E]' : 'text-[#6B1D23]'}`}>
                 {item.points.toLocaleString()} pts
               </div>
             </div>
@@ -261,22 +247,24 @@ export const ProfileView: React.FC<{ onOpenOnboarding: () => void }> = ({ onOpen
 
       {/* Friends Live Activity Feed */}
       <div className="space-y-2">
-        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Cambridge Friends Feed</h3>
+        <h3 className="text-[10px] font-bold text-[#A6BAAE] uppercase tracking-widest font-display">
+          Cantabrigia Chronicle Feed
+        </h3>
         <div className="space-y-2">
           {INITIAL_ACTIVITY_FEED.map((act) => (
-            <div key={act.id} className="p-3 rounded-2xl bg-slate-900/70 border border-slate-800/80 flex items-center justify-between text-xs">
+            <div key={act.id} className="p-3 rounded-2xl parchment-card border border-[#B89758]/40 flex items-center justify-between text-xs font-body">
               <div className="flex items-center gap-2.5">
-                <span className="text-lg">{act.userAvatar}</span>
+                <span className="text-base">{act.userAvatar}</span>
                 <div>
-                  <div className="text-slate-200">
-                    <strong className="text-white">{act.userName}</strong> {act.action}{' '}
-                    <strong className="text-amber-300">{act.targetName}</strong>
+                  <div className="text-[#1C3A27]">
+                    <strong className="font-display">{act.userName}</strong> {act.action}{' '}
+                    <strong className="text-[#6B1D23] font-display">{act.targetName}</strong>
                   </div>
-                  <div className="text-[10px] text-slate-500">{act.timeAgo}</div>
+                  <div className="text-[10px] text-[#544431] font-mono">{act.timeAgo}</div>
                 </div>
               </div>
               {act.badge && (
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-800 text-amber-400 border border-slate-700">
+                <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded bg-[#1C3A27] text-[#E2CA8E] border border-[#B89758]">
                   {act.badge}
                 </span>
               )}
@@ -288,12 +276,12 @@ export const ProfileView: React.FC<{ onOpenOnboarding: () => void }> = ({ onOpen
       {/* Settings Modal */}
       {showSettings && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-sm rounded-3xl bg-slate-950 border border-slate-800 p-5 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-              <h3 className="text-base font-black text-white font-['Outfit']">Settings & Modes</h3>
+          <div className="w-full max-w-sm rounded-3xl parchment-card border-2 border-[#B89758] p-5 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-[#B89758]/40">
+              <h3 className="text-base font-bold text-[#1C3A27] font-display">Scholar Settings</h3>
               <button
                 onClick={() => setShowSettings(false)}
-                className="w-7 h-7 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center hover:text-white"
+                className="w-7 h-7 rounded-full bg-[#1C3A27] text-[#E2CA8E] flex items-center justify-center"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -301,43 +289,43 @@ export const ProfileView: React.FC<{ onOpenOnboarding: () => void }> = ({ onOpen
 
             <div className="space-y-3">
               {/* Sound Toggle */}
-              <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs font-bold text-white">
-                  {soundEnabled ? <Volume2 className="w-4 h-4 text-amber-400" /> : <VolumeX className="w-4 h-4 text-slate-500" />}
-                  <span>Arcade Audio Effects</span>
+              <div className="p-3 rounded-2xl bg-[#F5EFE2] border border-[#B89758]/50 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs font-display font-bold text-[#1C3A27]">
+                  {soundEnabled ? <Volume2 className="w-4 h-4 text-[#B89758]" /> : <VolumeX className="w-4 h-4 text-[#879B8E]" />}
+                  <span>Archival Sound Chimes</span>
                 </div>
                 <button
                   onClick={toggleSound}
-                  className={`w-11 h-6 rounded-full transition-colors relative ${soundEnabled ? 'bg-amber-400' : 'bg-slate-700'}`}
+                  className={`w-11 h-6 rounded-full transition-colors relative ${soundEnabled ? 'bg-[#1C3A27]' : 'bg-[#D1C7B7]'}`}
                 >
-                  <div className={`w-4 h-4 rounded-full bg-slate-950 absolute top-1 transition-transform ${soundEnabled ? 'right-1' : 'left-1'}`} />
+                  <div className={`w-4 h-4 rounded-full bg-[#FAF8F5] absolute top-1 transition-transform ${soundEnabled ? 'right-1' : 'left-1'}`} />
                 </button>
               </div>
 
               {/* Quiet Hours */}
-              <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+              <div className="p-3 rounded-2xl bg-[#F5EFE2] border border-[#B89758]/50 flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-bold text-white">Quiet Hours (22:00 - 08:00)</div>
-                  <div className="text-[10px] text-slate-400">Mutes proximity nudges at night</div>
+                  <div className="text-xs font-display font-bold text-[#1C3A27]">Quiet Hours (22:00 - 08:00)</div>
+                  <div className="text-[10px] text-[#544431] font-body">Mutes proximity nudges at night</div>
                 </div>
                 <button
                   onClick={() => setQuietHours(!quietHours)}
-                  className={`w-11 h-6 rounded-full transition-colors relative ${quietHours ? 'bg-amber-400' : 'bg-slate-700'}`}
+                  className={`w-11 h-6 rounded-full transition-colors relative ${quietHours ? 'bg-[#1C3A27]' : 'bg-[#D1C7B7]'}`}
                 >
-                  <div className={`w-4 h-4 rounded-full bg-slate-950 absolute top-1 transition-transform ${quietHours ? 'right-1' : 'left-1'}`} />
+                  <div className={`w-4 h-4 rounded-full bg-[#FAF8F5] absolute top-1 transition-transform ${quietHours ? 'right-1' : 'left-1'}`} />
                 </button>
               </div>
 
-              {/* Partner Dashboards Switch */}
-              <div className="p-3 rounded-2xl bg-indigo-950/60 border border-indigo-500/40 space-y-2">
-                <div className="text-xs font-bold text-white">Switch to B2B Partner Portal:</div>
+              {/* Partner Consoles */}
+              <div className="p-3 rounded-2xl bg-[#1C3A27] border border-[#B89758] space-y-2 text-[#FAF8F5]">
+                <div className="text-xs font-display font-bold text-[#E2CA8E]">B2B Archival Portals:</div>
                 <div className="flex gap-2">
                   <button
                     onClick={() => {
                       setPartnerMode('museum');
                       setShowSettings(false);
                     }}
-                    className="flex-1 py-2 px-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[11px] flex items-center justify-center gap-1"
+                    className="flex-1 py-2 px-2 rounded-xl bg-[#122419] border border-[#B89758] text-[#E2CA8E] font-display font-bold text-[10px] flex items-center justify-center gap-1"
                   >
                     <Building2 className="w-3.5 h-3.5" /> Museum Portal
                   </button>
@@ -346,9 +334,9 @@ export const ProfileView: React.FC<{ onOpenOnboarding: () => void }> = ({ onOpen
                       setPartnerMode('business');
                       setShowSettings(false);
                     }}
-                    className="flex-1 py-2 px-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[11px] flex items-center justify-center gap-1"
+                    className="flex-1 py-2 px-2 rounded-xl bg-[#6B1D23] border border-[#B89758] text-[#FAF8F5] font-display font-bold text-[10px] flex items-center justify-center gap-1"
                   >
-                    <Coffee className="w-3.5 h-3.5" /> Cafe/Shop Portal
+                    <Coffee className="w-3.5 h-3.5" /> Partner Portal
                   </button>
                 </div>
               </div>
@@ -359,17 +347,17 @@ export const ProfileView: React.FC<{ onOpenOnboarding: () => void }> = ({ onOpen
                   setShowSettings(false);
                   onOpenOnboarding();
                 }}
-                className="w-full py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-300 font-bold text-xs hover:text-white"
+                className="w-full py-2.5 rounded-xl bg-[#1C3A27] text-[#E2CA8E] font-display font-bold text-xs border border-[#B89758]/50"
               >
-                Replay Welcome Onboarding
+                Replay Matriculation Welcome
               </button>
 
               {/* Reset Data */}
               <button
                 onClick={handleResetData}
-                className="w-full py-2.5 rounded-xl bg-rose-950/50 border border-rose-500/50 text-rose-300 font-bold text-xs hover:bg-rose-950"
+                className="w-full py-2.5 rounded-xl bg-[#6B1D23]/20 border border-[#6B1D23] text-[#6B1D23] font-display font-bold text-xs"
               >
-                Reset Demo Progress Data
+                Reset Scholar Progress Ledger
               </button>
             </div>
           </div>

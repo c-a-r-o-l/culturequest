@@ -1,6 +1,17 @@
 @import "tailwindcss";
 
 @layer utilities {
+  /* Fonts */
+  .font-display {
+    font-family: 'Cinzel', serif;
+  }
+  .font-body {
+    font-family: 'EB Garamond', Georgia, serif;
+  }
+  .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
   /* Safe area padding */
   .pb-safe {
     padding-bottom: max(1rem, env(safe-area-inset-bottom, 1rem));
@@ -30,6 +41,34 @@
   }
   .rotate-y-180 {
     transform: rotateY(180deg);
+  }
+
+  /* Parchment Card Textures & Shadows */
+  .parchment-card {
+    background-color: #FDF5E6;
+    color: #1A281F;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), inset 0 0 16px rgba(184, 151, 88, 0.15);
+  }
+
+  .parchment-deckled {
+    border: 1px solid rgba(184, 151, 88, 0.4);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), inset 0 0 12px rgba(197, 160, 89, 0.12);
+  }
+
+  /* Wax Seal Crimson Button */
+  .btn-wax-seal {
+    background: linear-gradient(135deg, #7A1F26 0%, #541419 100%);
+    border: 1px solid #992830;
+    box-shadow: 0 4px 0 #330A0E, 0 6px 12px rgba(0, 0, 0, 0.4);
+  }
+  .btn-wax-seal:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #330A0E, 0 3px 6px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Brass Accent Ribbon */
+  .brass-border {
+    border-color: #B89758;
   }
 }
 
@@ -61,3 +100,4 @@
 .animate-float {
   animation: float-subtle 3s ease-in-out infinite;
 }
+

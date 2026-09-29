@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Trophy, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Sparkles, Award, ArrowRight } from 'lucide-react';
 import { triggerHaptic } from '../../utils/audioAndFx';
 
 interface LevelUpModalProps {
@@ -17,31 +17,26 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
 }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in zoom-in-95 duration-200">
-      <div className="w-full max-w-sm rounded-3xl bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950 border-2 border-amber-400 p-6 shadow-[0_0_50px_rgba(245,158,11,0.4)] flex flex-col items-center text-center relative overflow-hidden">
-        {/* Glow circles */}
-        <div className="absolute -top-10 -left-10 w-36 h-36 bg-amber-400/30 rounded-full blur-2xl" />
-        <div className="absolute -bottom-10 -right-10 w-36 h-36 bg-indigo-500/30 rounded-full blur-2xl" />
-
-        <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-amber-400 via-amber-500 to-rose-500 p-1 shadow-2xl mb-4 animate-bounce [animation-iteration-count:2]">
-          <div className="w-full h-full bg-slate-950 rounded-[22px] flex items-center justify-center">
-            <Trophy className="w-10 h-10 text-amber-400" />
-          </div>
+      <div className="w-full max-w-sm rounded-3xl parchment-card border-2 border-[#B89758] p-6 shadow-[0_0_50px_rgba(0,0,0,0.85)] flex flex-col items-center text-center relative overflow-hidden">
+        {/* Wax seal emblem */}
+        <div className="w-20 h-20 rounded-full bg-[#6B1D23] border-4 border-[#B89758] flex items-center justify-center shadow-[0_4px_14px_rgba(107,29,35,0.5)] mb-3">
+          <Award className="w-10 h-10 text-[#E2CA8E]" />
         </div>
 
-        <span className="text-xs font-black uppercase tracking-widest text-amber-300 bg-amber-400/20 px-3 py-1 rounded-full border border-amber-400/40">
-          Level Up!
+        <span className="text-[10px] font-display font-bold uppercase tracking-[0.25em] text-[#6B1D23]">
+          Promotio Academica
         </span>
 
-        <h2 className="text-3xl font-black text-white mt-2 font-['Outfit']">Level {newLevel} Reached!</h2>
-        <p className="text-sm font-bold text-amber-400 mt-1">Title: {newTitle}</p>
+        <h2 className="text-2xl font-bold text-[#1C3A27] font-display mt-1">Scholar Rank {newLevel}</h2>
+        <p className="text-xs font-display font-bold text-[#6B1D23] mt-0.5">Fellowship Title: {newTitle}</p>
 
-        <div className="my-4 p-3.5 rounded-2xl bg-indigo-950/80 border border-indigo-500/40 text-xs text-slate-300 text-left space-y-1.5 w-full">
-          <div className="flex items-center gap-1.5 text-amber-300 font-bold">
-            <Sparkles className="w-3.5 h-3.5" /> Rewards Unlocked:
+        <div className="my-4 p-3.5 rounded-2xl bg-[#1C3A27] border border-[#B89758] text-xs text-[#FAF8F5] text-left space-y-1.5 w-full font-body">
+          <div className="flex items-center gap-1.5 text-[#E2CA8E] font-display font-bold text-xs mb-1">
+            <Sparkles className="w-3.5 h-3.5 text-[#B89758]" /> Privileges Inscribed:
           </div>
-          <div>• +50 Bonus Culture Points credited</div>
-          <div>• 1x Streak Freeze Token awarded</div>
-          <div>• Exclusive Cambridge Leaderboard Badge</div>
+          <div>• +50 Honorarium Points added to your ledger</div>
+          <div>• 1x Academic Streak Freeze Token awarded</div>
+          <div>• Cantabrigia Fellow Council Accreditation</div>
         </div>
 
         <button
@@ -49,10 +44,10 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
             triggerHaptic('light');
             onClose();
           }}
-          className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-rose-500 text-slate-950 font-black text-sm shadow-[0_4px_0_#9a3412] active:translate-y-0.5 transition flex items-center justify-center gap-2"
+          className="w-full py-3.5 rounded-2xl btn-wax-seal border border-[#B89758] text-[#FAF8F5] font-display font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg"
         >
-          <span>Claim & Continue Quest</span>
-          <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+          <span>Claim Honors & Continue</span>
+          <ArrowRight className="w-4 h-4 text-[#E2CA8E]" />
         </button>
       </div>
     </div>

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Venue } from '../../types';
-import { X, QrCode, Camera, ShieldCheck, Zap, Sparkles } from 'lucide-react';
+import { X, QrCode, Camera, ShieldCheck, Zap, Scroll, BookOpen } from 'lucide-react';
 import { sound, triggerHaptic } from '../../utils/audioAndFx';
 
 interface QrScannerModalProps {
@@ -15,7 +15,6 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
   onScanSuccess,
 }) => {
   const [manualCode, setManualCode] = useState('');
-  const [isScanning, setIsScanning] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
 
   const handleSimulateScan = () => {
@@ -32,67 +31,67 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
       onScanSuccess(venue.qrSecret);
     } else {
       triggerHaptic('medium');
-      setErrorMsg(`Invalid code. Expected code like ${venue.qrSecret}`);
+      setErrorMsg(`Invalid authentication token. Example: ${venue.qrSecret}`);
     }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-200">
-      <div className="w-full max-w-sm rounded-3xl bg-slate-950 border border-slate-800 p-5 shadow-2xl flex flex-col text-white">
+      <div className="w-full max-w-sm rounded-3xl bg-[#121A15] border-2 border-[#B89758] p-5 shadow-2xl flex flex-col text-[#FAF8F5]">
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="flex items-center justify-between pb-3 border-b border-[#B89758]/40">
           <div className="flex items-center gap-2">
-            <QrCode className="w-5 h-5 text-amber-400" />
-            <h3 className="text-sm font-black text-white">Proof of Presence Scan</h3>
+            <QrCode className="w-5 h-5 text-[#E2CA8E]" />
+            <h3 className="text-sm font-bold font-display text-[#FAF8F5]">Archival Token Authentication</h3>
           </div>
           <button
             onClick={() => {
               triggerHaptic('light');
               onClose();
             }}
-            className="w-8 h-8 rounded-full bg-slate-900 border border-slate-700 text-slate-400 flex items-center justify-center hover:text-white"
+            className="w-7 h-7 rounded-full bg-[#1C3A27] border border-[#B89758]/60 text-[#D1C7B7] flex items-center justify-center hover:text-white"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Viewfinder Target */}
-        <div className="my-4 relative h-60 w-full rounded-2xl bg-slate-900 border-2 border-dashed border-indigo-500/50 flex flex-col items-center justify-center overflow-hidden">
-          {/* Animated Laser Line */}
-          <div className="absolute left-4 right-4 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_10px_#f59e0b] animate-[bounce_2s_infinite]" />
+        <div className="my-4 relative h-60 w-full rounded-2xl bg-[#0B120E] border border-[#B89758]/60 flex flex-col items-center justify-center overflow-hidden">
+          {/* Animated Gold Laser Line */}
+          <div className="absolute left-4 right-4 h-0.5 bg-gradient-to-r from-transparent via-[#E2CA8E] to-transparent shadow-[0_0_12px_#B89758] animate-[bounce_2s_infinite]" />
 
-          {/* Target Corners */}
-          <div className="w-40 h-40 border-2 border-amber-400/80 rounded-2xl relative flex items-center justify-center p-3 text-center">
-            <div className="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-amber-400 -translate-x-1 -translate-y-1" />
-            <div className="absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4 border-amber-400 translate-x-1 -translate-y-1" />
-            <div className="absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4 border-amber-400 -translate-x-1 translate-y-1" />
-            <div className="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-amber-400 translate-x-1 translate-y-1" />
+          {/* Brass Target Corners */}
+          <div className="w-40 h-40 border-2 border-[#B89758]/80 rounded-2xl relative flex items-center justify-center p-3 text-center">
+            <div className="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-[#B89758] -translate-x-1 -translate-y-1" />
+            <div className="absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4 border-[#B89758] translate-x-1 -translate-y-1" />
+            <div className="absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4 border-[#B89758] -translate-x-1 translate-y-1" />
+            <div className="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-[#B89758] translate-x-1 translate-y-1" />
 
             <div className="space-y-1 pointer-events-none">
-              <Camera className="w-8 h-8 text-amber-400/80 mx-auto animate-pulse" />
-              <div className="text-[11px] font-bold text-slate-300">Point at {venue.name} Entrance QR</div>
+              <Camera className="w-8 h-8 text-[#E2CA8E] mx-auto animate-pulse" />
+              <div className="text-[10px] font-bold font-display text-[#D1C7B7]">Align with Reception Seal Placard</div>
             </div>
           </div>
 
-          <div className="absolute bottom-2 text-[10px] text-slate-500 flex items-center gap-1">
-            <ShieldCheck className="w-3 h-3 text-emerald-400" />
-            <span>Rotates daily to prevent screenshot fraud</span>
+          <div className="absolute bottom-2 text-[10px] font-mono text-[#879B8E] flex items-center gap-1">
+            <ShieldCheck className="w-3 h-3 text-[#B89758]" />
+            <span>Rotates daily to prevent screenshot forgery</span>
           </div>
         </div>
 
-        {/* Instant Test Button (for preview/desktop) */}
+        {/* Instant Verification Button */}
         <button
           onClick={handleSimulateScan}
-          className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs shadow-md flex items-center justify-center gap-2 mb-3 active:scale-98 transition"
+          className="w-full py-3 px-4 rounded-xl bg-[#1C3A27] hover:bg-[#234731] border border-[#B89758] text-[#E2CA8E] font-display font-bold text-xs uppercase tracking-wider shadow flex items-center justify-center gap-2 mb-3 active:scale-98 transition"
         >
-          <Zap className="w-4 h-4 text-amber-300" />
-          <span>Simulate Scanning Venue QR Code</span>
+          <Zap className="w-4 h-4 text-[#B89758]" />
+          <span>Simulate Scanning Venue Token</span>
         </button>
 
         {/* Manual Code Entry */}
         <form onSubmit={handleManualSubmit} className="space-y-2">
-          <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
-            Or Enter Venue Code
+          <div className="text-[9px] font-bold font-display uppercase tracking-widest text-[#B89758]">
+            Or Inscribe Archival Code
           </div>
           <div className="flex gap-2">
             <input
@@ -103,16 +102,16 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
                 setErrorMsg('');
               }}
               placeholder={`e.g. ${venue.qrSecret}`}
-              className="flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs font-mono font-bold text-white uppercase focus:outline-none focus:border-amber-400"
+              className="flex-1 px-3 py-2 rounded-xl bg-[#1C3A27] border border-[#B89758]/60 text-xs font-mono font-bold text-[#FAF8F5] uppercase focus:outline-none focus:border-[#E2CA8E]"
             />
             <button
               type="submit"
-              className="px-4 py-2 bg-amber-400 text-slate-950 font-black text-xs rounded-xl shadow hover:bg-amber-300"
+              className="px-4 py-2 bg-[#6B1D23] border border-[#B89758] text-[#FAF8F5] font-display font-bold text-xs rounded-xl shadow hover:opacity-90"
             >
               Verify
             </button>
           </div>
-          {errorMsg && <p className="text-[10px] text-rose-400 font-bold">{errorMsg}</p>}
+          {errorMsg && <p className="text-[10px] text-[#FF8A8A] font-bold font-body">{errorMsg}</p>}
         </form>
       </div>
     </div>

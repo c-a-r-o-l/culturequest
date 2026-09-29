@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Quest, QuestType } from '../../types';
-import { Sparkles, Clock, Play, CheckCircle2, Flame, MapPin, Zap } from 'lucide-react';
+import { Clock, Play, MapPin, Zap, Scroll, BookOpen, Feather } from 'lucide-react';
 import { triggerHaptic, sound } from '../../utils/audioAndFx';
 import { QuestPlayModal } from './QuestPlayModal';
 
@@ -11,7 +11,6 @@ export const QuestsView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'available' | 'completed'>('available');
   const [typeFilter, setTypeFilter] = useState<'All' | QuestType>('All');
 
-  // Daily quest
   const dailyQuest = quests.find((q) => q.isDaily);
 
   const displayedQuests = quests.filter((q) => {
@@ -27,33 +26,33 @@ export const QuestsView: React.FC = () => {
     <div className="pb-24 pt-3 px-4 max-w-md mx-auto space-y-4">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-black text-white font-['Outfit'] flex items-center gap-2">
-          <Sparkles className="w-6 h-6 text-amber-400" />
-          <span>Cultural Quests</span>
+        <h1 className="text-2xl font-bold text-[#FAF8F5] font-display flex items-center gap-2">
+          <Scroll className="w-6 h-6 text-[#B89758]" />
+          <span>Chronicles & Treatises</span>
         </h1>
-        <p className="text-xs text-slate-400 mt-0.5">
-          Solve exhibition mysteries, conquer museum trails, and earn rare card drops.
+        <p className="text-xs text-[#D1C7B7] font-body italic mt-0.5">
+          Archival scavenger hunts, mathematical enigmas, and exhibition trails.
         </p>
       </div>
 
       {/* Daily Quest Highlight Banner */}
       {dailyQuest && (
-        <div className="p-4 rounded-3xl bg-gradient-to-r from-rose-950/80 via-slate-900 to-indigo-950/80 border border-rose-500/40 shadow-xl relative overflow-hidden">
+        <div className="p-4 rounded-3xl bg-[#1C3A27] border-2 border-[#B89758] shadow-xl relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-rose-400 bg-rose-500/10 px-2.5 py-0.5 rounded-full border border-rose-500/30">
-              <Flame className="w-3 h-3 fill-rose-400" /> Daily Quick Dose
+            <span className="flex items-center gap-1 text-[9px] font-display font-bold uppercase tracking-widest text-[#E2CA8E] bg-[#122419] px-2.5 py-0.5 rounded-full border border-[#B89758]/50">
+              <Zap className="w-3 h-3 text-[#E2CA8E] fill-[#E2CA8E]" /> Daily Scholar Treat
             </span>
-            <span className="text-[10px] text-slate-400 font-semibold">Resets in 14h</span>
+            <span className="text-[10px] text-[#A6BAAE] font-mono">Cycle resets in 14h</span>
           </div>
 
-          <h3 className="text-base font-black text-white mt-2">{dailyQuest.title}</h3>
-          <p className="text-xs text-slate-300 mt-1 line-clamp-2">{dailyQuest.description}</p>
+          <h3 className="text-base font-bold text-[#FAF8F5] font-display mt-2">{dailyQuest.title}</h3>
+          <p className="text-xs text-[#D1C7B7] font-body mt-1 line-clamp-2 leading-relaxed">{dailyQuest.description}</p>
 
-          <div className="mt-3 flex items-center justify-between">
+          <div className="mt-3 flex items-center justify-between pt-2 border-t border-[#B89758]/30">
             <div className="flex items-center gap-2 text-xs">
-              <span className="text-amber-400 font-black">+{dailyQuest.pointsReward} pts</span>
-              <span className="text-slate-400">•</span>
-              <span className="text-slate-300 text-[11px]">{dailyQuest.estimatedMinutes}m quick test</span>
+              <span className="text-[#E2CA8E] font-mono font-bold">+{dailyQuest.pointsReward} pts</span>
+              <span className="text-[#879B8E]">•</span>
+              <span className="text-[#D1C7B7] text-[11px] font-body">{dailyQuest.estimatedMinutes}m reading</span>
             </div>
 
             <button
@@ -62,29 +61,29 @@ export const QuestsView: React.FC = () => {
                 sound.playCoin();
                 setActivePlayingQuest(dailyQuest);
               }}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-xs shadow-[0_2px_0_#b45309] active:translate-y-0.5 transition flex items-center gap-1.5"
+              className="px-4 py-2 rounded-xl btn-wax-seal border border-[#B89758] text-[#FAF8F5] font-display font-bold text-xs uppercase tracking-wider flex items-center gap-1.5"
             >
-              <Zap className="w-3.5 h-3.5 fill-slate-950" />
-              <span>{completedQuestIds.includes(dailyQuest.id) ? 'Play Again' : 'Start Now'}</span>
+              <Feather className="w-3.5 h-3.5 text-[#E2CA8E]" />
+              <span>{completedQuestIds.includes(dailyQuest.id) ? 'Review' : 'Decipher'}</span>
             </button>
           </div>
         </div>
       )}
 
       {/* Tabs: Available / Completed */}
-      <div className="flex rounded-2xl bg-slate-900 p-1 border border-slate-800">
+      <div className="flex rounded-2xl bg-[#1C3A27] p-1 border border-[#B89758]/60">
         <button
           onClick={() => {
             triggerHaptic('light');
             setActiveTab('available');
           }}
-          className={`flex-1 py-2 text-xs font-bold rounded-xl transition ${
+          className={`flex-1 py-2 text-xs font-display font-bold uppercase tracking-wider rounded-xl transition ${
             activeTab === 'available'
-              ? 'bg-amber-400 text-slate-950 shadow'
-              : 'text-slate-400 hover:text-white'
+              ? 'bg-[#122419] text-[#E2CA8E] border border-[#B89758]'
+              : 'text-[#879B8E] hover:text-[#FAF8F5]'
           }`}
         >
-          Available Quests ({quests.length - completedQuestIds.length})
+          Open Inquiries ({quests.length - completedQuestIds.length})
         </button>
 
         <button
@@ -92,13 +91,13 @@ export const QuestsView: React.FC = () => {
             triggerHaptic('light');
             setActiveTab('completed');
           }}
-          className={`flex-1 py-2 text-xs font-bold rounded-xl transition ${
+          className={`flex-1 py-2 text-xs font-display font-bold uppercase tracking-wider rounded-xl transition ${
             activeTab === 'completed'
-              ? 'bg-amber-400 text-slate-950 shadow'
-              : 'text-slate-400 hover:text-white'
+              ? 'bg-[#122419] text-[#E2CA8E] border border-[#B89758]'
+              : 'text-[#879B8E] hover:text-[#FAF8F5]'
           }`}
         >
-          Completed ({completedQuestIds.length})
+          Deciphered ({completedQuestIds.length})
         </button>
       </div>
 
@@ -111,18 +110,18 @@ export const QuestsView: React.FC = () => {
               triggerHaptic('light');
               setTypeFilter(type);
             }}
-            className={`px-3 py-1 rounded-full text-[11px] font-bold whitespace-nowrap transition ${
+            className={`px-3 py-1 rounded-xl text-[10px] font-display font-bold uppercase tracking-wider whitespace-nowrap transition ${
               typeFilter === type
-                ? 'bg-indigo-600 text-white'
-                : 'bg-slate-900 text-slate-400 border border-slate-800 hover:text-white'
+                ? 'bg-[#6B1D23] text-[#FAF8F5] border border-[#B89758]'
+                : 'bg-[#1C3A27] text-[#879B8E] border border-[#B89758]/40 hover:text-[#FAF8F5]'
             }`}
           >
-            {type === 'All' ? 'All Types' : type.toUpperCase()}
+            {type === 'All' ? 'All Treatises' : type}
           </button>
         ))}
       </div>
 
-      {/* Quests List */}
+      {/* Quests List (Parchment Manuscript Cards) */}
       <div className="space-y-3">
         {displayedQuests.length > 0 ? (
           displayedQuests.map((quest) => {
@@ -132,47 +131,45 @@ export const QuestsView: React.FC = () => {
             return (
               <div
                 key={quest.id}
-                className="p-4 rounded-3xl bg-slate-900/80 border border-slate-800 hover:border-slate-700 transition space-y-3"
+                className="p-4 rounded-3xl parchment-card border border-[#B89758]/60 space-y-3 shadow-md"
               >
                 <div className="flex items-start justify-between">
                   <div>
-                    <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mb-1">
-                      <span className="font-bold px-2 py-0.5 rounded-full bg-slate-800 text-amber-300 uppercase tracking-tight">
+                    <div className="flex items-center gap-1.5 text-[9px] text-[#544431] font-mono mb-1">
+                      <span className="font-bold px-2 py-0.2 rounded bg-[#1C3A27] text-[#E2CA8E] uppercase tracking-wider font-display">
                         {quest.type}
                       </span>
-                      <span className="px-1.5 py-0.5 rounded bg-indigo-950 text-indigo-300 font-semibold">
-                        {quest.difficulty}
-                      </span>
+                      <span className="font-semibold text-[#6B1D23]">{quest.difficulty}</span>
                       <span>• {quest.estimatedMinutes} mins</span>
                     </div>
 
-                    <h3 className="text-sm font-black text-white">{quest.title}</h3>
-                    <div className="flex items-center gap-1 text-[11px] text-slate-400 mt-0.5">
-                      <MapPin className="w-3 h-3 text-rose-400" />
+                    <h3 className="text-sm font-bold text-[#1C3A27] font-display">{quest.title}</h3>
+                    <div className="flex items-center gap-1 text-[11px] text-[#544431] font-body italic mt-0.5">
+                      <MapPin className="w-3 h-3 text-[#6B1D23]" />
                       <span>{venue?.name}</span>
                     </div>
                   </div>
 
                   {isCompleted ? (
-                    <span className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0">
+                    <span className="w-8 h-8 rounded-full bg-[#1C3A27] text-[#E2CA8E] flex items-center justify-center font-bold text-xs shrink-0 border border-[#B89758]">
                       ✓
                     </span>
                   ) : (
                     <div className="text-right shrink-0">
-                      <div className="text-xs font-black text-amber-400">+{quest.pointsReward} pts</div>
-                      <div className="text-[10px] text-slate-400">+{quest.xpReward} XP</div>
+                      <div className="text-xs font-bold text-[#6B1D23] font-mono">+{quest.pointsReward} pts</div>
+                      <div className="text-[10px] text-[#544431] font-mono">+{quest.xpReward} XP</div>
                     </div>
                   )}
                 </div>
 
-                <p className="text-xs text-slate-300 leading-relaxed">{quest.description}</p>
+                <p className="text-xs text-[#304135] font-body leading-relaxed">{quest.description}</p>
 
                 {quest.expiresIn && (
-                  <div className="text-[10px] text-rose-400 font-semibold">⏳ {quest.expiresIn}</div>
+                  <div className="text-[10px] text-[#6B1D23] font-mono font-bold">⏳ Term ends: {quest.expiresIn}</div>
                 )}
 
-                <div className="pt-1 flex items-center justify-between border-t border-slate-800/80">
-                  <span className="text-[11px] text-slate-400">{quest.steps.length} interactive steps</span>
+                <div className="pt-2 flex items-center justify-between border-t border-[#B89758]/30">
+                  <span className="text-[11px] text-[#544431] font-mono">{quest.steps.length} marginalia steps</span>
 
                   <button
                     onClick={() => {
@@ -180,18 +177,18 @@ export const QuestsView: React.FC = () => {
                       sound.playCoin();
                       setActivePlayingQuest(quest);
                     }}
-                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-xs shadow active:translate-y-0.5 transition flex items-center gap-1.5"
+                    className="px-4 py-2 rounded-xl btn-wax-seal border border-[#B89758] text-[#FAF8F5] font-display font-bold text-xs uppercase tracking-wider flex items-center gap-1.5"
                   >
-                    <Play className="w-3 h-3 fill-slate-950" />
-                    <span>{isCompleted ? 'Replay Quest' : 'Start Quest'}</span>
+                    <Play className="w-3 h-3 fill-[#FAF8F5]" />
+                    <span>{isCompleted ? 'Review' : 'Begin'}</span>
                   </button>
                 </div>
               </div>
             );
           })
         ) : (
-          <div className="py-12 text-center text-slate-500 text-xs">
-            No quests match this filter. Try selecting "All Types"!
+          <div className="py-12 text-center text-[#879B8E] text-xs font-display">
+            No manuscripts found in this archive index.
           </div>
         )}
       </div>

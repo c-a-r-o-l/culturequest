@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Quest, QuestStep } from '../../types';
+import { Quest } from '../../types';
 import { useApp } from '../../context/AppContext';
 import {
   X,
@@ -8,13 +8,13 @@ import {
   Camera,
   HelpCircle,
   Sparkles,
-  Trophy,
   ArrowRight,
-  Lightbulb,
+  BookOpen,
+  Scroll,
+  Feather,
   Compass,
-  Zap,
 } from 'lucide-react';
-import { sound, triggerHaptic, fireConfetti } from '../../utils/audioAndFx';
+import { sound, triggerHaptic } from '../../utils/audioAndFx';
 
 interface QuestPlayModalProps {
   quest: Quest;
@@ -22,7 +22,7 @@ interface QuestPlayModalProps {
 }
 
 export const QuestPlayModal: React.FC<QuestPlayModalProps> = ({ quest, onClose }) => {
-  const { venues, completeQuest, user } = useApp();
+  const { venues, completeQuest } = useApp();
   const venue = venues.find((v) => v.id === quest.venueId);
 
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -31,12 +31,10 @@ export const QuestPlayModal: React.FC<QuestPlayModalProps> = ({ quest, onClose }
   const [isCorrect, setIsCorrect] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [photoState, setPhotoState] = useState<'idle' | 'taking' | 'verified'>('idle');
-  const [completed, setCompleted] = useState(false);
 
   const currentStep = quest.steps[currentStepIndex];
   const progressPercent = Math.round(((currentStepIndex + (hasAnswered || photoState === 'verified' ? 1 : 0)) / quest.steps.length) * 100);
 
-  // Handle Trivia choice
   const handleSelectOption = (idx: number) => {
     if (hasAnswered) return;
     setSelectedOption(idx);
@@ -53,7 +51,6 @@ export const QuestPlayModal: React.FC<QuestPlayModalProps> = ({ quest, onClose }
     }
   };
 
-  // Handle Photo challenge simulation
   const handleTakePhoto = () => {
     triggerHaptic('medium');
     setPhotoState('taking');
@@ -65,7 +62,6 @@ export const QuestPlayModal: React.FC<QuestPlayModalProps> = ({ quest, onClose }
     }, 1400);
   };
 
-  // Advance to next step or complete quest
   const handleNextStep = () => {
     triggerHaptic('light');
 
@@ -77,24 +73,22 @@ export const QuestPlayModal: React.FC<QuestPlayModalProps> = ({ quest, onClose }
       setShowHint(false);
       setPhotoState('idle');
     } else {
-      // Quest Finished!
-      setCompleted(true);
       completeQuest(quest.id);
     }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-0 sm:p-4 animate-in fade-in duration-200">
-      <div className="w-full max-w-md h-full sm:h-auto sm:max-h-[90vh] bg-slate-950 border border-slate-800 rounded-none sm:rounded-3xl flex flex-col overflow-hidden text-white shadow-2xl">
+      <div className="w-full max-w-md h-full sm:h-auto sm:max-h-[90vh] bg-[#121A15] border-2 border-[#B89758] rounded-none sm:rounded-3xl flex flex-col overflow-hidden text-[#FAF8F5] shadow-2xl">
         {/* Top Header */}
-        <div className="p-4 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between">
+        <div className="p-3.5 bg-[#1C3A27] border-b border-[#B89758]/50 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="w-8 h-8 rounded-xl bg-amber-400/20 text-amber-400 flex items-center justify-center font-bold text-xs">
-              Q
+            <span className="w-8 h-8 rounded-xl bg-[#122419] border border-[#B89758] text-[#E2CA8E] flex items-center justify-center font-bold text-xs font-display">
+              CH
             </span>
             <div>
-              <h3 className="text-xs font-bold text-white truncate max-w-[200px]">{quest.title}</h3>
-              <p className="text-[10px] text-slate-400">{venue?.name}</p>
+              <h3 className="text-xs font-bold text-[#FAF8F5] font-display truncate max-w-[210px]">{quest.title}</h3>
+              <p className="text-[10px] text-[#A6BAAE] font-body italic">{venue?.name}</p>
             </div>
           </div>
 
@@ -103,49 +97,51 @@ export const QuestPlayModal: React.FC<QuestPlayModalProps> = ({ quest, onClose }
               triggerHaptic('light');
               onClose();
             }}
-            className="w-8 h-8 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center hover:text-white"
+            className="w-7 h-7 rounded-full bg-[#122419] border border-[#B89758]/60 text-[#D1C7B7] flex items-center justify-center hover:text-white"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Progress Bar */}
-        <div className="w-full bg-slate-800 h-1.5">
+        {/* Progress Ribbon */}
+        <div className="w-full bg-[#0F1B13] h-1.5 border-b border-[#B89758]/30">
           <div
-            className="bg-gradient-to-r from-indigo-500 via-amber-400 to-emerald-400 h-full transition-all duration-300"
+            className="bg-gradient-to-r from-[#B89758] via-[#E2CA8E] to-[#6B1D23] h-full transition-all duration-300"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
 
         {/* Step Content */}
         <div className="p-5 flex-1 overflow-y-auto space-y-4">
-          <div className="flex items-center justify-between text-xs text-slate-400 font-semibold">
-            <span>
-              Step {currentStepIndex + 1} of {quest.steps.length}
-            </span>
-            <span className="text-amber-400 uppercase tracking-wider text-[10px] font-black">
-              {currentStep.type} Challenge
+          <div className="flex items-center justify-between text-xs text-[#A6BAAE] font-mono">
+            <span>Section {currentStepIndex + 1} of {quest.steps.length}</span>
+            <span className="text-[#E2CA8E] uppercase tracking-wider text-[10px] font-display font-bold">
+              {currentStep.type} Treatise
             </span>
           </div>
 
-          <div>
-            <h2 className="text-lg font-black text-white font-['Outfit']">{currentStep.title}</h2>
-            <p className="text-xs text-slate-300 mt-1 leading-relaxed">{currentStep.description}</p>
+          {/* Parchment Manuscript Query Card */}
+          <div className="parchment-card p-4 rounded-2xl border border-[#B89758] space-y-2">
+            <div className="text-[10px] font-mono text-[#6B1D23] font-bold uppercase tracking-widest">
+              MS. INQUIRY CODE 0{currentStepIndex + 1}
+            </div>
+            <h2 className="text-base font-bold text-[#1C3A27] font-display leading-snug">{currentStep.title}</h2>
+            <p className="text-xs text-[#304135] font-body leading-relaxed">{currentStep.description}</p>
           </div>
 
           {/* TRIVIA COMPONENT */}
           {currentStep.type === 'trivia' && currentStep.options && (
-            <div className="space-y-2.5 pt-2">
+            <div className="space-y-2.5 pt-1">
               {currentStep.options.map((option, idx) => {
-                let btnStyle = 'bg-slate-900 border-slate-800 text-slate-200 hover:border-slate-700';
+                let btnStyle = 'bg-[#1C3A27] border-[#B89758]/40 text-[#FAF8F5] hover:border-[#B89758]';
 
                 if (hasAnswered) {
                   if (idx === currentStep.correctOptionIndex) {
-                    btnStyle = 'bg-emerald-950/80 border-emerald-500 text-white font-bold shadow-[0_0_12px_rgba(16,185,129,0.3)]';
+                    btnStyle = 'bg-[#1C3A27] border-2 border-[#B89758] text-[#E2CA8E] font-bold shadow-[0_0_12px_rgba(184,151,88,0.4)]';
                   } else if (idx === selectedOption) {
-                    btnStyle = 'bg-rose-950/80 border-rose-500 text-rose-200';
+                    btnStyle = 'bg-[#6B1D23] border-[#B89758] text-[#FAF8F5]';
                   } else {
-                    btnStyle = 'bg-slate-900/50 border-slate-800 text-slate-500 opacity-50';
+                    btnStyle = 'bg-[#122419] border-[#1C3A27] text-[#879B8E] opacity-50';
                   }
                 }
 
@@ -154,24 +150,24 @@ export const QuestPlayModal: React.FC<QuestPlayModalProps> = ({ quest, onClose }
                     key={idx}
                     disabled={hasAnswered}
                     onClick={() => handleSelectOption(idx)}
-                    className={`w-full p-3.5 rounded-2xl border text-left text-xs transition-all flex items-center justify-between ${btnStyle}`}
+                    className={`w-full p-3.5 rounded-2xl border text-left text-xs font-body transition-all flex items-center justify-between ${btnStyle}`}
                   >
                     <span>{option}</span>
                     {hasAnswered && idx === currentStep.correctOptionIndex && (
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <CheckCircle2 className="w-4 h-4 text-[#E2CA8E] shrink-0" />
                     )}
                     {hasAnswered && idx === selectedOption && idx !== currentStep.correctOptionIndex && (
-                      <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                      <AlertCircle className="w-4 h-4 text-[#FAF8F5] shrink-0" />
                     )}
                   </button>
                 );
               })}
 
-              {/* Explanation note */}
+              {/* Scholar Annotation Note */}
               {hasAnswered && currentStep.explanation && (
-                <div className="p-3.5 rounded-2xl bg-indigo-950/60 border border-indigo-500/30 text-xs text-indigo-200 leading-relaxed mt-3">
-                  <div className="flex items-center gap-1.5 font-bold text-amber-300 mb-1">
-                    <Lightbulb className="w-3.5 h-3.5" /> Curators’ Fact:
+                <div className="p-3.5 rounded-2xl bg-[#1C3A27] border border-[#B89758] text-xs text-[#D1C7B7] font-body leading-relaxed mt-3">
+                  <div className="flex items-center gap-1.5 font-bold font-display text-[#E2CA8E] mb-1">
+                    <Feather className="w-3.5 h-3.5 text-[#B89758]" /> Scholar's Annotation:
                   </div>
                   {currentStep.explanation}
                 </div>
@@ -181,15 +177,15 @@ export const QuestPlayModal: React.FC<QuestPlayModalProps> = ({ quest, onClose }
 
           {/* CLUE / SCAVENGER HUNT */}
           {(currentStep.type === 'clue' || currentStep.type === 'location') && (
-            <div className="space-y-3 pt-2">
-              <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2">
-                <div className="flex items-center gap-2 text-amber-400 text-xs font-bold">
-                  <Compass className="w-4 h-4" />
-                  <span>Target Artefact</span>
+            <div className="space-y-3 pt-1">
+              <div className="p-4 rounded-2xl bg-[#1C3A27] border border-[#B89758] space-y-2">
+                <div className="flex items-center gap-2 text-[#E2CA8E] text-xs font-bold font-display">
+                  <Compass className="w-4 h-4 text-[#B89758]" />
+                  <span>Targeted Exhibition Relic</span>
                 </div>
-                <div className="text-sm font-black text-white">{currentStep.targetObject || 'Gallery Exhibit'}</div>
-                <p className="text-xs text-slate-400">
-                  Walk through the gallery hall and locate this piece. Once found, inspect its label!
+                <div className="text-sm font-bold text-[#FAF8F5] font-display">{currentStep.targetObject || 'Gallery Relic'}</div>
+                <p className="text-xs text-[#D1C7B7] font-body">
+                  Traverse the gallery chamber to locate this piece. Examine the plaque label closely!
                 </p>
               </div>
 
@@ -199,13 +195,13 @@ export const QuestPlayModal: React.FC<QuestPlayModalProps> = ({ quest, onClose }
                   {!showHint ? (
                     <button
                       onClick={() => setShowHint(true)}
-                      className="text-xs text-amber-400/90 hover:text-amber-300 flex items-center gap-1.5 font-semibold"
+                      className="text-xs text-[#E2CA8E] hover:underline flex items-center gap-1.5 font-display"
                     >
-                      <HelpCircle className="w-3.5 h-3.5" /> Need a hint?
+                      <HelpCircle className="w-3.5 h-3.5 text-[#B89758]" /> Consult Marginalia Hint
                     </button>
                   ) : (
-                    <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200">
-                      💡 <strong>Clue:</strong> {currentStep.clueHint}
+                    <div className="p-3 rounded-xl bg-[#1C3A27] border border-[#B89758]/50 text-xs text-[#D1C7B7] font-body">
+                      💡 <strong>Marginalia Note:</strong> {currentStep.clueHint}
                     </div>
                   )}
                 </div>
@@ -218,35 +214,35 @@ export const QuestPlayModal: React.FC<QuestPlayModalProps> = ({ quest, onClose }
                   setHasAnswered(true);
                 }}
                 disabled={hasAnswered}
-                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-xs shadow-md"
+                className="w-full py-3.5 rounded-2xl btn-wax-seal border border-[#B89758] text-[#FAF8F5] font-display font-bold text-xs uppercase tracking-wider"
               >
-                {hasAnswered ? 'Artefact Found & Verified! ✓' : 'I Have Found This Artefact'}
+                {hasAnswered ? 'Relic Verified in Archive ✓' : 'I Have Examined This Relic'}
               </button>
             </div>
           )}
 
           {/* PHOTO CHALLENGE */}
           {currentStep.type === 'photo' && (
-            <div className="space-y-3 pt-2">
-              <div className="relative h-48 w-full rounded-2xl bg-slate-900 border border-slate-800 overflow-hidden flex flex-col items-center justify-center text-center p-4">
+            <div className="space-y-3 pt-1">
+              <div className="relative h-44 w-full rounded-2xl bg-[#0B120E] border border-[#B89758]/60 overflow-hidden flex flex-col items-center justify-center text-center p-4">
                 {photoState === 'idle' && (
                   <div className="space-y-2">
-                    <Camera className="w-10 h-10 text-amber-400/80 mx-auto" />
-                    <p className="text-xs text-slate-300 max-w-xs">{currentStep.photoPrompt}</p>
+                    <Camera className="w-8 h-8 text-[#E2CA8E] mx-auto" />
+                    <p className="text-xs text-[#D1C7B7] font-body max-w-xs">{currentStep.photoPrompt}</p>
                   </div>
                 )}
 
                 {photoState === 'taking' && (
                   <div className="space-y-2 text-center">
-                    <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto" />
-                    <p className="text-xs text-amber-300 font-bold">Validating visual pattern...</p>
+                    <div className="w-8 h-8 border-2 border-[#B89758] border-t-transparent rounded-full animate-spin mx-auto" />
+                    <p className="text-xs text-[#E2CA8E] font-display">Analyzing visual geometry...</p>
                   </div>
                 )}
 
                 {photoState === 'verified' && (
-                  <div className="space-y-2 text-center text-emerald-400">
-                    <CheckCircle2 className="w-10 h-10 mx-auto" />
-                    <p className="text-xs font-bold text-white">Visual Match Confirmed!</p>
+                  <div className="space-y-2 text-center text-[#E2CA8E]">
+                    <CheckCircle2 className="w-9 h-9 mx-auto" />
+                    <p className="text-xs font-bold font-display text-[#FAF8F5]">Visual Match Inscribed in Vault!</p>
                   </div>
                 )}
               </div>
@@ -255,14 +251,14 @@ export const QuestPlayModal: React.FC<QuestPlayModalProps> = ({ quest, onClose }
                 <button
                   onClick={handleTakePhoto}
                   disabled={photoState === 'taking'}
-                  className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-rose-500 to-amber-400 text-slate-950 font-black text-xs shadow-md flex items-center justify-center gap-2"
+                  className="w-full py-3.5 rounded-2xl btn-wax-seal border border-[#B89758] text-[#FAF8F5] font-display font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2"
                 >
-                  <Camera className="w-4 h-4" />
-                  <span>Snap Photo to Validate</span>
+                  <Camera className="w-4 h-4 text-[#E2CA8E]" />
+                  <span>Capture Archival Scan</span>
                 </button>
               ) : (
-                <div className="p-3 bg-emerald-950/40 border border-emerald-500/50 rounded-xl text-xs text-emerald-200 text-center font-bold">
-                  Photo accepted by Curator AI!
+                <div className="p-3 bg-[#1C3A27] border border-[#B89758] rounded-xl text-xs text-[#E2CA8E] text-center font-display font-bold">
+                  Visual proof accepted by Curator Council!
                 </div>
               )}
             </div>
@@ -270,14 +266,14 @@ export const QuestPlayModal: React.FC<QuestPlayModalProps> = ({ quest, onClose }
         </div>
 
         {/* Bottom Continue Action */}
-        <div className="p-4 bg-slate-900 border-t border-slate-800">
+        <div className="p-4 bg-[#1C3A27] border-t border-[#B89758]/50">
           <button
             onClick={handleNextStep}
             disabled={!hasAnswered && photoState !== 'verified'}
-            className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-rose-500 disabled:opacity-40 text-slate-950 font-black text-sm shadow-[0_4px_0_#9a3412] active:translate-y-0.5 transition flex items-center justify-center gap-2"
+            className="w-full py-3.5 rounded-2xl btn-wax-seal border border-[#B89758] disabled:opacity-40 text-[#FAF8F5] font-display font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2"
           >
-            <span>{currentStepIndex < quest.steps.length - 1 ? 'Continue Quest' : 'Complete Quest & Claim Rewards'}</span>
-            <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+            <span>{currentStepIndex < quest.steps.length - 1 ? 'Next Treatise Step' : 'Seal Inquiries & Claim Relic'}</span>
+            <ArrowRight className="w-4 h-4 text-[#E2CA8E]" />
           </button>
         </div>
       </div>

@@ -43,7 +43,7 @@ function MainApp() {
   const uncompletedQuestsCount = quests.filter((q) => !completedQuestIds.includes(q.id)).length;
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 flex flex-col font-['Plus_Jakarta_Sans',sans-serif] selection:bg-amber-400 selection:text-slate-950">
+    <div className="min-h-screen bg-[#121A15] text-[#FAF8F5] flex flex-col font-['EB_Garamond',Georgia,serif] selection:bg-[#B89758] selection:text-[#121A15]">
       {/* Offline Mode Toast */}
       <OfflineIndicator />
 

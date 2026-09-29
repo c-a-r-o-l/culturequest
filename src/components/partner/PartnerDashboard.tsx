@@ -6,12 +6,11 @@ import {
   QrCode,
   Plus,
   BarChart3,
-  Users,
   CheckCircle2,
   ArrowLeft,
-  Sparkles,
   Printer,
   TrendingUp,
+  Scroll,
 } from 'lucide-react';
 import { sound, triggerHaptic } from '../../utils/audioAndFx';
 
@@ -93,64 +92,63 @@ export const PartnerDashboard: React.FC = () => {
 
   return (
     <div className="pb-24 pt-3 px-4 max-w-md mx-auto space-y-4">
-      {/* Top Header with Return Button */}
+      {/* Top Header */}
       <div className="flex items-center justify-between">
         <button
           onClick={() => {
             triggerHaptic('light');
             setPartnerMode('user');
           }}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-bold text-slate-200 hover:text-white"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1C3A27] border border-[#B89758] text-xs font-display font-bold text-[#E2CA8E] hover:text-white"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Exit to Explorer Game</span>
+          <span>Exit to Cartography</span>
         </button>
 
-        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-400 text-slate-950">
-          B2B PARTNER CONSOLE
+        <span className="text-[10px] font-display font-bold px-2 py-0.5 rounded-full bg-[#6B1D23] text-[#FAF8F5] border border-[#B89758]">
+          CANTABRIGIA B2B CONSOLE
         </span>
       </div>
 
       {/* Role Toggle: Museum vs Local Business */}
-      <div className="flex rounded-2xl bg-slate-900 p-1 border border-slate-800">
+      <div className="flex rounded-2xl bg-[#1C3A27] p-1 border border-[#B89758]/60">
         <button
           onClick={() => {
             triggerHaptic('light');
             setPartnerMode('museum');
           }}
-          className={`flex-1 py-2 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition ${
-            partnerMode === 'museum' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
+          className={`flex-1 py-2 text-xs font-display font-bold uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 transition ${
+            partnerMode === 'museum' ? 'bg-[#122419] text-[#E2CA8E] border border-[#B89758]' : 'text-[#879B8E] hover:text-[#FAF8F5]'
           }`}
         >
-          <Building2 className="w-3.5 h-3.5" />
-          <span>Museum Console</span>
+          <Building2 className="w-3.5 h-3.5 text-[#B89758]" />
+          <span>Museum Archive</span>
         </button>
         <button
           onClick={() => {
             triggerHaptic('light');
             setPartnerMode('business');
           }}
-          className={`flex-1 py-2 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition ${
-            partnerMode === 'business' ? 'bg-amber-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
+          className={`flex-1 py-2 text-xs font-display font-bold uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 transition ${
+            partnerMode === 'business' ? 'bg-[#122419] text-[#E2CA8E] border border-[#B89758]' : 'text-[#879B8E] hover:text-[#FAF8F5]'
           }`}
         >
-          <Coffee className="w-3.5 h-3.5" />
-          <span>Local Partner Console</span>
+          <Coffee className="w-3.5 h-3.5 text-[#B89758]" />
+          <span>Merchant Guild</span>
         </button>
       </div>
 
       {/* ================= MUSEUM VIEW ================= */}
       {partnerMode === 'museum' && (
         <div className="space-y-4">
-          {/* Venue Selector */}
           <div>
-            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-              Select Venue Admin Account:
+            <label className="text-[10px] font-display font-bold text-[#D1C7B7] uppercase tracking-widest block mb-1">
+              Select Collegiate Archive Authority:
             </label>
             <select
               value={selectedVenueId}
               onChange={(e) => setSelectedVenueId(e.target.value)}
-              className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-bold text-white focus:outline-none"
+              className="w-full p-2.5 rounded-xl bg-[#1C3A27] border border-[#B89758] text-xs font-display font-bold text-[#FAF8F5] focus:outline-none"
             >
               {venues.map((v) => (
                 <option key={v.id} value={v.id}>
@@ -160,147 +158,142 @@ export const PartnerDashboard: React.FC = () => {
             </select>
           </div>
 
-          {/* Sub Navigation */}
-          <div className="flex gap-2 border-b border-slate-800 pb-2 text-xs font-bold">
+          <div className="flex gap-2 border-b border-[#B89758]/30 pb-2 text-xs font-display font-bold">
             <button
               onClick={() => setActiveTab('analytics')}
-              className={`pb-1 ${activeTab === 'analytics' ? 'text-amber-400 border-b-2 border-amber-400' : 'text-slate-400'}`}
+              className={`pb-1 uppercase tracking-wider ${activeTab === 'analytics' ? 'text-[#E2CA8E] border-b-2 border-[#B89758]' : 'text-[#879B8E]'}`}
             >
-              Visitor Footfall
+              Scholar Traffic
             </button>
             <button
               onClick={() => setActiveTab('quests')}
-              className={`pb-1 ${activeTab === 'quests' ? 'text-amber-400 border-b-2 border-amber-400' : 'text-slate-400'}`}
+              className={`pb-1 uppercase tracking-wider ${activeTab === 'quests' ? 'text-[#E2CA8E] border-b-2 border-[#B89758]' : 'text-[#879B8E]'}`}
             >
-              Create Quest
+              Create Treatise
             </button>
             <button
               onClick={() => setActiveTab('qr')}
-              className={`pb-1 ${activeTab === 'qr' ? 'text-amber-400 border-b-2 border-amber-400' : 'text-slate-400'}`}
+              className={`pb-1 uppercase tracking-wider ${activeTab === 'qr' ? 'text-[#E2CA8E] border-b-2 border-[#B89758]' : 'text-[#879B8E]'}`}
             >
-              Print Venue QR
+              Placard Seal
             </button>
           </div>
 
-          {/* 1. Footfall Analytics */}
           {activeTab === 'analytics' && (
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-2.5">
-                <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800">
-                  <div className="text-2xl font-black text-amber-400">{selectedVenue.weeklyVisitors}</div>
-                  <div className="text-[10px] text-slate-400 uppercase font-bold">Visits this week</div>
-                  <div className="text-[10px] text-emerald-400 font-semibold mt-1 flex items-center gap-1">
-                    <TrendingUp className="w-3 h-3" /> +34% vs last week
+                <div className="p-3.5 rounded-2xl parchment-card border border-[#B89758]/60">
+                  <div className="text-2xl font-bold font-mono text-[#1C3A27]">{selectedVenue.weeklyVisitors}</div>
+                  <div className="text-[9px] text-[#544431] font-display font-bold uppercase">Matriculations this week</div>
+                  <div className="text-[10px] text-[#1C3A27] font-body mt-1 flex items-center gap-1 font-bold">
+                    <TrendingUp className="w-3 h-3 text-[#1C3A27]" /> +34% research footfall
                   </div>
                 </div>
 
-                <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800">
-                  <div className="text-2xl font-black text-indigo-400">76%</div>
-                  <div className="text-[10px] text-slate-400 uppercase font-bold">Aged 16-24 cohort</div>
-                  <div className="text-[10px] text-slate-400 mt-1">High Gen-Z engagement</div>
+                <div className="p-3.5 rounded-2xl parchment-card border border-[#B89758]/60">
+                  <div className="text-2xl font-bold font-mono text-[#6B1D23]">76%</div>
+                  <div className="text-[9px] text-[#544431] font-display font-bold uppercase">Aged 16-24 Cohort</div>
+                  <div className="text-[10px] text-[#544431] font-body italic mt-1">High student interest</div>
                 </div>
               </div>
 
-              {/* Peak Times */}
-              <div className="p-4 rounded-3xl bg-slate-900 border border-slate-800 space-y-2">
-                <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <BarChart3 className="w-4 h-4 text-amber-400" /> Peak Explorer Check-In Hours
+              <div className="p-4 rounded-3xl bg-[#1C3A27] border border-[#B89758] space-y-2">
+                <h4 className="text-xs font-bold text-[#E2CA8E] font-display flex items-center gap-1.5 uppercase tracking-wider">
+                  <BarChart3 className="w-4 h-4 text-[#B89758]" /> Peak Archival Check-In Hours
                 </h4>
-                <div className="space-y-1 text-xs text-slate-300">
+                <div className="space-y-1 text-xs text-[#D1C7B7] font-body">
                   <div className="flex justify-between">
-                    <span>11:00 - 13:00 (Lunch Quest Dose)</span>
-                    <span className="font-bold text-amber-300">38% of visits</span>
+                    <span>11:00 - 13:00 (Scholarly Midday Stroll)</span>
+                    <span className="font-mono text-[#E2CA8E] font-bold">38% of visits</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>14:30 - 16:30 (Afternoon Strolls)</span>
-                    <span className="font-bold text-amber-300">45% of visits</span>
+                    <span>14:30 - 16:30 (Afternoon Library Walk)</span>
+                    <span className="font-mono text-[#E2CA8E] font-bold">45% of visits</span>
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* 2. Quest Form Builder */}
           {activeTab === 'quests' && (
-            <form onSubmit={handleCreateQuest} className="space-y-3 p-4 rounded-3xl bg-slate-900 border border-slate-800">
-              <h3 className="text-sm font-black text-white flex items-center gap-1.5">
-                <Plus className="w-4 h-4 text-amber-400" /> Add Exhibit Challenge
+            <form onSubmit={handleCreateQuest} className="space-y-3 p-4 rounded-3xl parchment-card border-2 border-[#B89758]">
+              <h3 className="text-sm font-bold text-[#1C3A27] font-display flex items-center gap-1.5">
+                <Plus className="w-4 h-4 text-[#6B1D23]" /> Author New Archival Treatise
               </h3>
 
               {questSuccessMsg && (
-                <div className="p-2.5 rounded-xl bg-emerald-950 border border-emerald-500 text-emerald-200 text-xs font-bold flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4" /> Quest published live to the explorer map!
+                <div className="p-2.5 rounded-xl bg-[#1C3A27] text-[#E2CA8E] border border-[#B89758] text-xs font-display font-bold flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4" /> Treatise published to the Cantabrigia cartography!
                 </div>
               )}
 
               <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase">Quest Title</label>
+                <label className="text-[9px] font-display font-bold text-[#544431] uppercase">Treatise Title</label>
                 <input
                   type="text"
                   value={questTitle}
                   onChange={(e) => setQuestTitle(e.target.value)}
-                  placeholder="e.g. Mystery of the Egyptian Sarcophagus"
+                  placeholder="e.g. Mystery of Isaac Newton's Prism"
                   required
-                  className="w-full mt-1 p-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white"
+                  className="w-full mt-1 p-2 rounded-xl bg-[#F5EFE2] border border-[#B89758] text-xs text-[#1C3A27] font-body"
                 />
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase">Trivia Question or Clue</label>
+                <label className="text-[9px] font-display font-bold text-[#544431] uppercase">Inquiry Clue</label>
                 <textarea
                   value={questQuestion}
                   onChange={(e) => setQuestQuestion(e.target.value)}
-                  placeholder="What pigment did ancient artisans use to paint the golden border?"
-                  className="w-full mt-1 p-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white h-16"
+                  placeholder="Examine the optical refraction angle in the main cabinet."
+                  className="w-full mt-1 p-2 rounded-xl bg-[#F5EFE2] border border-[#B89758] text-xs text-[#1C3A27] font-body h-16"
                 />
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase">Correct Answer</label>
+                <label className="text-[9px] font-display font-bold text-[#544431] uppercase">Correct Deduction</label>
                 <input
                   type="text"
                   value={questCorrectOption}
                   onChange={(e) => setQuestCorrectOption(e.target.value)}
-                  placeholder="Orpiment (arsenic trisulfide)"
-                  className="w-full mt-1 p-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white"
+                  placeholder="Chromatic Dispersion Theory"
+                  className="w-full mt-1 p-2 rounded-xl bg-[#F5EFE2] border border-[#B89758] text-xs text-[#1C3A27] font-body"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-xs shadow"
+                className="w-full py-3 rounded-xl btn-wax-seal border border-[#B89758] text-[#FAF8F5] font-display font-bold text-xs uppercase tracking-wider"
               >
-                Publish Quest (+150 pts reward)
+                Inscribe Treatise (+150 pts reward)
               </button>
             </form>
           )}
 
-          {/* 3. QR Code Generator */}
           {activeTab === 'qr' && (
-            <div className="p-4 rounded-3xl bg-slate-900 border border-slate-800 text-center space-y-3">
-              <h3 className="text-sm font-black text-white">Rotating Venue Check-in QR</h3>
-              <p className="text-xs text-slate-400">
-                Display this printed placard at your museum reception desk or ticket counter.
+            <div className="p-4 rounded-3xl parchment-card border-2 border-[#B89758] text-center space-y-3">
+              <h3 className="text-sm font-bold text-[#1C3A27] font-display">Authentication Placard Seal</h3>
+              <p className="text-xs text-[#544431] font-body italic">
+                Display this physical seal at the reception desk for visiting scholars to scan.
               </p>
 
-              <div className="p-4 bg-white rounded-2xl inline-block shadow-lg">
-                <div className="w-36 h-36 bg-slate-950 rounded-xl flex flex-col items-center justify-center p-2 text-white text-center font-mono">
-                  <div className="text-[10px] text-amber-400 font-bold mb-1">CULTUREQUEST</div>
-                  <div className="text-xs font-black tracking-widest">{selectedVenue.qrSecret}</div>
-                  <div className="text-[9px] text-slate-400 mt-2">SCAN TO CHECK IN</div>
+              <div className="p-4 bg-white rounded-2xl inline-block shadow border-2 border-[#B89758]">
+                <div className="w-36 h-36 bg-[#121A15] rounded-xl flex flex-col items-center justify-center p-2 text-[#FAF8F5] text-center font-mono">
+                  <div className="text-[9px] text-[#B89758] font-bold mb-1 font-display">CANTABRIGIA</div>
+                  <div className="text-xs font-bold tracking-widest">{selectedVenue.qrSecret}</div>
+                  <div className="text-[8px] text-[#A6BAAE] mt-2 font-display">SEAL OF PRESENCE</div>
                 </div>
               </div>
 
-              <div className="text-xs font-mono font-bold text-amber-300">
-                Token: {selectedVenue.qrSecret}
+              <div className="text-xs font-mono font-bold text-[#6B1D23]">
+                Token Code: {selectedVenue.qrSecret}
               </div>
 
               <button
                 onClick={() => window.print()}
-                className="w-full py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-slate-200 hover:text-white flex items-center justify-center gap-2"
+                className="w-full py-2.5 rounded-xl bg-[#1C3A27] border border-[#B89758] text-xs font-display font-bold text-[#E2CA8E] hover:text-white flex items-center justify-center gap-2"
               >
                 <Printer className="w-4 h-4" />
-                <span>Print Placard PDF</span>
+                <span>Print Placard Parchment</span>
               </button>
             </div>
           )}
@@ -310,53 +303,53 @@ export const PartnerDashboard: React.FC = () => {
       {/* ================= LOCAL BUSINESS VIEW ================= */}
       {partnerMode === 'business' && (
         <div className="space-y-4">
-          <div className="p-4 rounded-3xl bg-amber-500/10 border border-amber-500/30 space-y-1">
-            <h3 className="text-sm font-black text-amber-300">Cambridge Merchant Footfall</h3>
-            <p className="text-xs text-slate-300">
-              42 explorers redeemed perks at partner cafes & bookshops this month, generating £380 in footfall spend!
+          <div className="p-4 rounded-3xl bg-[#1C3A27] border border-[#B89758] space-y-1">
+            <h3 className="text-sm font-bold text-[#E2CA8E] font-display">Cambridge Merchant Fellowship</h3>
+            <p className="text-xs text-[#D1C7B7] font-body italic">
+              42 scholars redeemed perks at partner cafes & bookshops this month, generating £380 in footfall spend.
             </p>
           </div>
 
-          <form onSubmit={handleCreateReward} className="p-4 rounded-3xl bg-slate-900 border border-slate-800 space-y-3">
-            <h3 className="text-sm font-black text-white flex items-center gap-1.5">
-              <Plus className="w-4 h-4 text-amber-400" /> Create Business Perk
+          <form onSubmit={handleCreateReward} className="p-4 rounded-3xl parchment-card border-2 border-[#B89758] space-y-3">
+            <h3 className="text-sm font-bold text-[#1C3A27] font-display flex items-center gap-1.5">
+              <Plus className="w-4 h-4 text-[#6B1D23]" /> Inscribe Merchant Offer
             </h3>
 
             {rewardSuccessMsg && (
-              <div className="p-2.5 rounded-xl bg-emerald-950 border border-emerald-500 text-emerald-200 text-xs font-bold flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4" /> Perk added to explorer catalog!
+              <div className="p-2.5 rounded-xl bg-[#1C3A27] text-[#E2CA8E] border border-[#B89758] text-xs font-display font-bold flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4" /> Perk added to the scholar fellowship catalog!
               </div>
             )}
 
             <div>
-              <label className="text-[10px] font-bold text-slate-400 uppercase">Offer Title</label>
+              <label className="text-[9px] font-display font-bold text-[#544431] uppercase">Offer Title</label>
               <input
                 type="text"
                 value={rewardTitle}
                 onChange={(e) => setRewardTitle(e.target.value)}
-                placeholder="e.g. Free filter coffee with cake slice"
+                placeholder="e.g. Complimentary filter coffee with cake slice"
                 required
-                className="w-full mt-1 p-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white"
+                className="w-full mt-1 p-2 rounded-xl bg-[#F5EFE2] border border-[#B89758] text-xs text-[#1C3A27] font-body"
               />
             </div>
 
             <div>
-              <label className="text-[10px] font-bold text-slate-400 uppercase">Points Cost to Explorer</label>
+              <label className="text-[9px] font-display font-bold text-[#544431] uppercase">Points Cost</label>
               <input
                 type="number"
                 value={rewardCost}
                 onChange={(e) => setRewardCost(Number(e.target.value))}
                 min={50}
                 max={500}
-                className="w-full mt-1 p-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white"
+                className="w-full mt-1 p-2 rounded-xl bg-[#F5EFE2] border border-[#B89758] text-xs text-[#1C3A27] font-mono"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-xs shadow"
+              className="w-full py-3 rounded-xl btn-wax-seal border border-[#B89758] text-[#FAF8F5] font-display font-bold text-xs uppercase tracking-wider"
             >
-              Add Partner Perk
+              Affix Fellowship Seal
             </button>
           </form>
         </div>

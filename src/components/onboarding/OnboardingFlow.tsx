@@ -1,71 +1,71 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { ExplorerClass } from '../../types';
-import { Sparkles, MapPin, Award, Coffee, Compass, Check, ArrowRight, ShieldCheck, ChevronRight } from 'lucide-react';
+import { Sparkles, MapPin, Coffee, Compass, Check, ArrowRight, ShieldCheck, ChevronRight, BookOpen, Feather, Scroll } from 'lucide-react';
 import { sound, fireConfetti, triggerHaptic } from '../../utils/audioAndFx';
 
 const EXPLORER_CLASSES: { id: ExplorerClass; title: string; desc: string; icon: string; perk: string }[] = [
   {
     id: 'Curator',
     title: 'Curator',
-    desc: 'Passionate connoisseur of fine arts, paintings & antiquities.',
+    desc: 'Connoisseur of fine arts, illuminated codices & antiquities.',
     icon: '🏛️',
-    perk: '+15% bonus XP in art galleries',
+    perk: '+15% bonus XP in fine art galleries',
   },
   {
     id: 'Historian',
     title: 'Historian',
-    desc: 'Uncovering the lore, manuscripts and social heritage of the city.',
+    desc: 'Uncovering the lore, manuscripts and collegiate lore of 800 years.',
     icon: '📜',
     perk: '+15% bonus XP on ancient relics',
   },
   {
     id: 'Wanderer',
-    title: 'Wanderer',
-    desc: 'Spontaneous city explorer soaking up botany, architecture & vibe.',
+    title: 'Natural Philosopher',
+    desc: 'Spontaneous scholar soaking up botany, architecture & the River Cam.',
     icon: '🧭',
-    perk: '20% larger radar check-in range',
+    perk: '20% larger cartographic check-in radar',
   },
   {
     id: 'Detective',
-    title: 'Detective',
-    desc: 'Sharp-eyed riddle solver who cracks every scavenger clue.',
+    title: 'Archive Detective',
+    desc: 'Sharp-eyed riddle solver who decodes every marginalia clue.',
     icon: '🔍',
-    perk: 'Free hints on complex puzzles',
+    perk: 'Free hints on complex manuscript puzzles',
   },
 ];
 
 const INTEREST_OPTIONS = [
-  { id: 'Art', label: 'Fine Art & Galleries', icon: '🎨' },
-  { id: 'History', label: 'Ancient History', icon: '🏺' },
-  { id: 'Science', label: 'Science & Astronomy', icon: '🔬' },
-  { id: 'Architecture', label: 'Gothic Architecture', icon: '🏰' },
-  { id: 'Books', label: 'Rare Books & Libraries', icon: '📚' },
-  { id: 'Botany', label: 'Botany & Nature', icon: '🌿' },
-  { id: 'Local heritage', label: 'Folk Heritage & Lore', icon: '🍺' },
+  { id: 'Art', label: 'Fine Art & Classical Antiquities', icon: '🎨' },
+  { id: 'History', label: 'Medieval & Ancient History', icon: '🏺' },
+  { id: 'Science', label: 'Natural Philosophy & Astronomy', icon: '🔬' },
+  { id: 'Architecture', label: 'Gothic Chapels & College Courts', icon: '🏰' },
+  { id: 'Books', label: 'Rare Manuscripts & Libraries', icon: '📚' },
+  { id: 'Botany', label: 'Botany & Herbarium Curiosities', icon: '🌿' },
+  { id: 'Local heritage', label: 'Fenland Folklore & City Lore', icon: '🍺' },
 ];
 
 const CAROUSEL_SLIDES = [
   {
-    title: 'Explore Cambridge like an Open-World Game',
-    subtitle: 'Wander past historic colleges, hidden chapels, and world-class museums with your personal radar.',
+    title: 'Explore 800 Years of Cambridge Heritage',
+    subtitle: 'Wander past historic colleges, hidden chapels, and world-class archives with your antiquarian map.',
     icon: Compass,
-    accent: 'from-indigo-500 to-sky-400',
-    stat: '8 Venues in Cambridge Pilot',
+    accent: 'from-[#1C3A27] to-[#122419]',
+    stat: '8 Collegiate Venues in Cambridge',
   },
   {
-    title: 'Conquer Quests & Collect Artefacts',
-    subtitle: 'Crack scavenger clues, answer exhibit trivia, and build your digital card album with rare holographic drops.',
-    icon: Sparkles,
-    accent: 'from-amber-400 to-rose-500',
-    stat: '25+ Collectible Cards & Badges',
+    title: 'Decipher Manuscripts & Collect Relics',
+    subtitle: 'Crack archival clues, answer exhibit trivia, and illuminate your digital folio with rare holographic folios.',
+    icon: Scroll,
+    accent: 'from-[#6B1D23] to-[#421013]',
+    stat: '25+ Archival Artefacts & Seals',
   },
   {
-    title: 'Redeem for Real Coffee & Indie Books',
-    subtitle: 'Turn your steps into free flat whites at The Copper Kettle, Chelsea buns at Fitzbillies, and book discounts.',
+    title: 'Earn Fellowship Perks at Local Bookshops',
+    subtitle: 'Turn your scholarly discoveries into artisan flat whites at The Copper Kettle and Chelsea buns at Fitzbillies.',
     icon: Coffee,
-    accent: 'from-emerald-400 to-teal-500',
-    stat: '6 Local Partner Perks',
+    accent: 'from-[#B89758] to-[#8C6E30]',
+    stat: '6 Independent Cambridge Partners',
   },
 ];
 
@@ -80,7 +80,7 @@ export const OnboardingFlow: React.FC<{ onFinish?: () => void }> = ({ onFinish }
   const [selectedClass, setSelectedClass] = useState<ExplorerClass>('Wanderer');
   const [selectedAvatar, setSelectedAvatar] = useState('🧭');
 
-  const AVATAR_OPTIONS = ['🧭', '🦁', '🦉', '🦕', '🦊', '🎨', '🔭', '👑', '⚡'];
+  const AVATAR_OPTIONS = ['🧭', '📜', '🦁', '🦉', '🎨', '🔬', '🏛️', '👑', '⚡'];
 
   const handleInterestToggle = (interest: string) => {
     triggerHaptic('light');
@@ -91,7 +91,7 @@ export const OnboardingFlow: React.FC<{ onFinish?: () => void }> = ({ onFinish }
 
   const handleFinalSubmit = () => {
     completeOnboarding({
-      name: name.trim() || 'Explorer',
+      name: name.trim() || 'Scholar',
       explorerClass: selectedClass,
       interests: selectedInterests,
       avatar: selectedAvatar,
@@ -102,37 +102,34 @@ export const OnboardingFlow: React.FC<{ onFinish?: () => void }> = ({ onFinish }
   // 1. Splash Screen
   if (step === 'splash') {
     return (
-      <div className="fixed inset-0 z-50 bg-[#090d16] flex flex-col items-center justify-between p-6 text-center select-none overflow-hidden">
-        {/* Ambient glow backgrounds */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-600/20 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-amber-500/15 rounded-full blur-[90px] pointer-events-none" />
+      <div className="fixed inset-0 z-50 bg-[#121A15] flex flex-col items-center justify-between p-6 text-center select-none overflow-hidden">
+        {/* Subtle dark academia ambient glow */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#1C3A27]/40 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-[#B89758]/15 rounded-full blur-[90px] pointer-events-none" />
 
-        <div className="pt-12 flex flex-col items-center">
-          <span className="px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold border border-indigo-500/30 uppercase tracking-widest">
-            Cambridge Pilot
+        <div className="pt-10 flex flex-col items-center">
+          <span className="px-3.5 py-1 rounded-full bg-[#1C3A27] text-[#E2CA8E] text-[10px] font-bold border border-[#B89758]/60 uppercase tracking-[0.25em] font-display">
+            Cambridge Scholarly System
           </span>
         </div>
 
-        {/* Central Logo & Badge */}
+        {/* Central Logo & Emblem */}
         <div className="flex flex-col items-center my-auto relative">
           <div className="relative mb-6">
-            <div className="w-28 h-28 rounded-3xl bg-gradient-to-tr from-indigo-700 via-indigo-600 to-amber-500 p-1 shadow-[0_0_50px_rgba(99,102,241,0.4)]">
-              <div className="w-full h-full bg-slate-950 rounded-[22px] flex items-center justify-center">
-                <Compass className="w-14 h-14 text-amber-400 stroke-[2] animate-pulse" />
+            <div className="w-28 h-28 rounded-3xl bg-[#1C3A27] border-2 border-[#B89758] p-1 shadow-[0_0_40px_rgba(184,151,88,0.25)] flex items-center justify-center">
+              <div className="w-full h-full bg-[#0F1B13] rounded-[22px] flex items-center justify-center">
+                <BookOpen className="w-14 h-14 text-[#E2CA8E] stroke-[1.8] animate-pulse" />
               </div>
             </div>
-            {/* Spinning decorative orbit */}
-            <div className="absolute -inset-3 border-2 border-dashed border-amber-400/40 rounded-full animate-spin [animation-duration:20s]" />
+            {/* Spinning decorative astrolabe border */}
+            <div className="absolute -inset-3 border border-dashed border-[#B89758]/50 rounded-full animate-spin [animation-duration:35s]" />
           </div>
 
-          <h1 className="text-4xl font-black tracking-tight text-white font-['Outfit']">
-            Culture<span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-rose-400">Quest</span>
+          <h1 className="text-3xl font-bold tracking-wider text-[#FAF8F5] font-display">
+            CHRONICLES OF <span className="text-[#E2CA8E]">CANTABRIGIA</span>
           </h1>
-          <p className="text-lg font-medium text-amber-300/90 mt-2">
-            Turn culture into a quest.
-          </p>
-          <p className="text-xs text-slate-400 max-w-xs mt-3 leading-relaxed">
-            The location-based RPG for discovering museums, cracking historical enigmas, and winning local perks.
+          <p className="text-sm font-body italic text-[#D1C7B7] mt-2 max-w-xs">
+            "A Dark Academia cultural discovery quest bridging 800 years of Cambridge heritage."
           </p>
         </div>
 
@@ -144,12 +141,12 @@ export const OnboardingFlow: React.FC<{ onFinish?: () => void }> = ({ onFinish }
               sound.playCoin();
               setStep('carousel');
             }}
-            className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-rose-500 text-slate-950 font-black text-base shadow-[0_6px_0_#9a3412] active:translate-y-1 active:shadow-[0_2px_0_#9a3412] transition-all flex items-center justify-center gap-2"
+            className="w-full py-4 px-6 rounded-2xl btn-wax-seal text-[#FAF8F5] font-display font-bold text-sm tracking-widest uppercase flex items-center justify-center gap-2 border border-[#B89758]"
           >
-            <span>Begin Your Quest</span>
-            <ArrowRight className="w-5 h-5 stroke-[2.5]" />
+            <span>Matriculate / Begin</span>
+            <ArrowRight className="w-4 h-4 stroke-[2.5] text-[#E2CA8E]" />
           </button>
-          <p className="text-[11px] text-slate-500 mt-3">Free for explorers • B2B2C cultural ecosystem</p>
+          <p className="text-[10px] text-[#879B8E] mt-3 font-mono">Designed for scholars & explorers • Cantabrigia v1.0</p>
         </div>
       </div>
     );
@@ -161,42 +158,38 @@ export const OnboardingFlow: React.FC<{ onFinish?: () => void }> = ({ onFinish }
     const SlideIcon = cur.icon;
 
     return (
-      <div className="fixed inset-0 z-50 bg-[#090d16] flex flex-col justify-between p-6">
-        {/* Top skip */}
+      <div className="fixed inset-0 z-50 bg-[#121A15] flex flex-col justify-between p-6">
         <div className="flex justify-between items-center pt-4">
           <div className="flex gap-1.5">
             {CAROUSEL_SLIDES.map((_, i) => (
               <div
                 key={i}
                 className={`h-1.5 rounded-full transition-all duration-300 ${
-                  i === carouselIndex ? 'w-8 bg-amber-400' : 'w-2 bg-slate-700'
+                  i === carouselIndex ? 'w-8 bg-[#B89758]' : 'w-2 bg-[#1C3A27]'
                 }`}
               />
             ))}
           </div>
           <button
             onClick={() => setStep('auth')}
-            className="text-xs font-bold text-slate-400 hover:text-white"
+            className="text-xs font-display tracking-widest uppercase text-[#B89758] hover:text-[#FAF8F5]"
           >
             Skip
           </button>
         </div>
 
-        {/* Carousel Content */}
         <div className="my-auto flex flex-col items-center text-center px-2">
-          <div className="w-24 h-24 rounded-3xl bg-slate-900 border border-slate-800 flex items-center justify-center shadow-xl mb-6 relative">
-            <div className={`absolute inset-0 rounded-3xl bg-gradient-to-br ${cur.accent} opacity-20 blur-md`} />
-            <SlideIcon className="w-12 h-12 text-amber-400" />
+          <div className="w-24 h-24 rounded-3xl bg-[#1C3A27] border-2 border-[#B89758] flex items-center justify-center shadow-xl mb-6 relative">
+            <SlideIcon className="w-12 h-12 text-[#E2CA8E]" />
           </div>
 
-          <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-slate-800 text-amber-300 border border-slate-700 mb-3">
+          <span className="text-[10px] font-bold font-mono px-3 py-1 rounded-full bg-[#1C3A27] text-[#E2CA8E] border border-[#B89758]/50 mb-3 tracking-wider">
             {cur.stat}
           </span>
-          <h2 className="text-2xl font-black text-white leading-tight font-['Outfit']">{cur.title}</h2>
-          <p className="text-sm text-slate-300 mt-3 leading-relaxed max-w-sm">{cur.subtitle}</p>
+          <h2 className="text-2xl font-bold text-[#FAF8F5] leading-snug font-display">{cur.title}</h2>
+          <p className="text-sm font-body text-[#D1C7B7] mt-3 leading-relaxed max-w-sm">{cur.subtitle}</p>
         </div>
 
-        {/* Next / Continue Controls */}
         <div className="pb-6">
           <button
             onClick={() => {
@@ -208,10 +201,10 @@ export const OnboardingFlow: React.FC<{ onFinish?: () => void }> = ({ onFinish }
                 setStep('auth');
               }
             }}
-            className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-base shadow-[0_5px_0_#b45309] active:translate-y-1 active:shadow-[0_1px_0_#b45309] transition flex items-center justify-center gap-2"
+            className="w-full py-4 rounded-2xl bg-[#1C3A27] border border-[#B89758] text-[#E2CA8E] font-display font-bold text-xs uppercase tracking-widest shadow-[0_4px_12px_rgba(0,0,0,0.4)] active:translate-y-1 transition flex items-center justify-center gap-2"
           >
-            <span>{carouselIndex < CAROUSEL_SLIDES.length - 1 ? 'Next' : 'Get Started'}</span>
-            <ChevronRight className="w-5 h-5" />
+            <span>{carouselIndex < CAROUSEL_SLIDES.length - 1 ? 'Continue Reading' : 'Enroll as Scholar'}</span>
+            <ChevronRight className="w-4 h-4 text-[#B89758]" />
           </button>
         </div>
       </div>
@@ -221,30 +214,30 @@ export const OnboardingFlow: React.FC<{ onFinish?: () => void }> = ({ onFinish }
   // 3. Auth Options
   if (step === 'auth') {
     return (
-      <div className="fixed inset-0 z-50 bg-[#090d16] flex flex-col justify-between p-6">
+      <div className="fixed inset-0 z-50 bg-[#121A15] flex flex-col justify-between p-6">
         <div className="pt-6">
-          <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">Step 1 of 4</span>
-          <h2 className="text-2xl font-black text-white mt-1 font-['Outfit']">Join CultureQuest</h2>
-          <p className="text-xs text-slate-400 mt-1">Save your badges, level up, and redeem points.</p>
+          <span className="text-[10px] font-bold font-display uppercase tracking-widest text-[#B89758]">Step 1 of 4</span>
+          <h2 className="text-2xl font-bold text-[#FAF8F5] mt-1 font-display">Archival Matriculation</h2>
+          <p className="text-xs font-body text-[#D1C7B7] mt-1">Preserve your scholarly discoveries and academic honors across Cambridge.</p>
         </div>
 
         <div className="space-y-3 max-w-sm w-full mx-auto my-auto">
-          {/* Continue as Guest - instant access */}
+          {/* Guest matriculation */}
           <button
             onClick={() => {
               triggerHaptic('light');
               setStep('interests');
             }}
-            className="w-full py-3.5 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-[0_4px_0_#3730a3] active:translate-y-1 active:shadow-[0_1px_0_#3730a3] transition flex items-center justify-center gap-2"
+            className="w-full py-3.5 px-4 rounded-2xl btn-wax-seal text-[#FAF8F5] font-display font-bold text-xs tracking-wider uppercase border border-[#B89758] flex items-center justify-center gap-2"
           >
-            <Compass className="w-4 h-4 text-amber-300" />
-            <span>Continue as Guest (Instant Play)</span>
+            <Compass className="w-4 h-4 text-[#E2CA8E]" />
+            <span>Enter as Guest Scholar (Instant Access)</span>
           </button>
 
           <div className="relative flex py-2 items-center">
-            <div className="flex-grow border-t border-slate-800"></div>
-            <span className="flex-shrink mx-4 text-slate-500 text-[11px] font-semibold">or sync with</span>
-            <div className="flex-grow border-t border-slate-800"></div>
+            <div className="flex-grow border-t border-[#1C3A27]"></div>
+            <span className="flex-shrink mx-4 text-[#879B8E] text-[10px] font-display tracking-widest uppercase">Collegiate Single Sign-On</span>
+            <div className="flex-grow border-t border-[#1C3A27]"></div>
           </div>
 
           <button
@@ -252,10 +245,10 @@ export const OnboardingFlow: React.FC<{ onFinish?: () => void }> = ({ onFinish }
               triggerHaptic('light');
               setStep('interests');
             }}
-            className="w-full py-3 px-4 rounded-xl bg-slate-900 border border-slate-700/80 hover:bg-slate-800 text-slate-200 font-semibold text-xs flex items-center justify-center gap-3 transition"
+            className="w-full py-3 px-4 rounded-xl bg-[#1C3A27] border border-[#B89758]/50 text-[#FAF8F5] font-display text-xs flex items-center justify-center gap-3 transition"
           >
-            <span className="text-base">🇬</span>
-            <span>Sign in with Google</span>
+            <span>🇬</span>
+            <span>Authenticate with Google</span>
           </button>
 
           <button
@@ -263,15 +256,15 @@ export const OnboardingFlow: React.FC<{ onFinish?: () => void }> = ({ onFinish }
               triggerHaptic('light');
               setStep('interests');
             }}
-            className="w-full py-3 px-4 rounded-xl bg-slate-900 border border-slate-700/80 hover:bg-slate-800 text-slate-200 font-semibold text-xs flex items-center justify-center gap-3 transition"
+            className="w-full py-3 px-4 rounded-xl bg-[#1C3A27] border border-[#B89758]/50 text-[#FAF8F5] font-display text-xs flex items-center justify-center gap-3 transition"
           >
-            <span className="text-base"></span>
-            <span>Sign in with Apple</span>
+            <span></span>
+            <span>Authenticate with Apple</span>
           </button>
         </div>
 
         <div className="pb-4 text-center">
-          <p className="text-[11px] text-slate-500">By continuing, you agree to fair-play rules & non-commercial pilot terms.</p>
+          <p className="text-[10px] font-mono text-[#879B8E]">Adherence to academic honor codes & archival privacy standards.</p>
         </div>
       </div>
     );
@@ -280,11 +273,11 @@ export const OnboardingFlow: React.FC<{ onFinish?: () => void }> = ({ onFinish }
   // 4. Interests Picker
   if (step === 'interests') {
     return (
-      <div className="fixed inset-0 z-50 bg-[#090d16] flex flex-col justify-between p-6 overflow-y-auto">
+      <div className="fixed inset-0 z-50 bg-[#121A15] flex flex-col justify-between p-6 overflow-y-auto">
         <div className="pt-4">
-          <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">Step 2 of 4</span>
-          <h2 className="text-2xl font-black text-white mt-1 font-['Outfit']">What excites you?</h2>
-          <p className="text-xs text-slate-400 mt-1">Select your interests to personalize recommended quests and cultural trails.</p>
+          <span className="text-[10px] font-bold font-display uppercase tracking-widest text-[#B89758]">Step 2 of 4</span>
+          <h2 className="text-2xl font-bold text-[#FAF8F5] mt-1 font-display">Academic Faculties</h2>
+          <p className="text-xs font-body text-[#D1C7B7] mt-1">Select your fields of intellectual curiosity to customize recommendations.</p>
         </div>
 
         <div className="my-auto py-6 grid grid-cols-1 gap-2.5 max-w-sm mx-auto w-full">
@@ -296,20 +289,20 @@ export const OnboardingFlow: React.FC<{ onFinish?: () => void }> = ({ onFinish }
                 onClick={() => handleInterestToggle(item.id)}
                 className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all text-left ${
                   isSelected
-                    ? 'bg-indigo-950/80 border-amber-400/80 text-white shadow-[0_0_15px_rgba(245,158,11,0.2)]'
-                    : 'bg-slate-900/70 border-slate-800 text-slate-300 hover:border-slate-700'
+                    ? 'bg-[#1C3A27] border-[#B89758] text-[#FAF8F5] shadow-[0_2px_12px_rgba(184,151,88,0.2)]'
+                    : 'bg-[#142018] border-[#1C3A27] text-[#D1C7B7] hover:border-[#B89758]/40'
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">{item.icon}</span>
-                  <span className="text-xs font-bold">{item.label}</span>
+                  <span className="text-xl">{item.icon}</span>
+                  <span className="text-xs font-bold font-display">{item.label}</span>
                 </div>
                 <div
                   className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
-                    isSelected ? 'bg-amber-400 border-amber-400 text-slate-950' : 'border-slate-600'
+                    isSelected ? 'bg-[#6B1D23] border-[#B89758] text-[#FAF8F5]' : 'border-[#879B8E]/50'
                   }`}
                 >
-                  {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                  {isSelected && <Check className="w-3.5 h-3.5 stroke-[3] text-[#E2CA8E]" />}
                 </div>
               </button>
             );
@@ -323,10 +316,10 @@ export const OnboardingFlow: React.FC<{ onFinish?: () => void }> = ({ onFinish }
               setStep('permissions');
             }}
             disabled={selectedInterests.length === 0}
-            className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 disabled:opacity-50 text-slate-950 font-black text-base shadow-[0_5px_0_#b45309] active:translate-y-1 transition flex items-center justify-center gap-2"
+            className="w-full py-4 rounded-2xl bg-[#1C3A27] border border-[#B89758] text-[#E2CA8E] font-display font-bold text-xs uppercase tracking-widest shadow flex items-center justify-center gap-2 disabled:opacity-40"
           >
-            <span>Continue ({selectedInterests.length} selected)</span>
-            <ChevronRight className="w-5 h-5" />
+            <span>Proceed ({selectedInterests.length} selected)</span>
+            <ChevronRight className="w-4 h-4 text-[#B89758]" />
           </button>
         </div>
       </div>
@@ -336,34 +329,34 @@ export const OnboardingFlow: React.FC<{ onFinish?: () => void }> = ({ onFinish }
   // 5. Permissions (Location & Camera)
   if (step === 'permissions') {
     return (
-      <div className="fixed inset-0 z-50 bg-[#090d16] flex flex-col justify-between p-6">
+      <div className="fixed inset-0 z-50 bg-[#121A15] flex flex-col justify-between p-6">
         <div className="pt-4">
-          <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">Step 3 of 4</span>
-          <h2 className="text-2xl font-black text-white mt-1 font-['Outfit']">Explorer Permissions</h2>
-          <p className="text-xs text-slate-400 mt-1">CultureQuest is a location-based game. Here is why we need device access:</p>
+          <span className="text-[10px] font-bold font-display uppercase tracking-widest text-[#B89758]">Step 3 of 4</span>
+          <h2 className="text-2xl font-bold text-[#FAF8F5] mt-1 font-display">Archival Affordances</h2>
+          <p className="text-xs font-body text-[#D1C7B7] mt-1">To prove presence at real Cambridge archives, we request device access:</p>
         </div>
 
         <div className="my-auto space-y-4 max-w-sm mx-auto w-full">
-          <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+          <div className="p-4 rounded-2xl parchment-card border border-[#B89758] flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#1C3A27] text-[#E2CA8E] flex items-center justify-center shrink-0 border border-[#B89758]">
               <MapPin className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-white">Geolocation Radar</h3>
-              <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
-                Detects when you are within 75m of a museum to unlock check-in stamps and rare card drops. We never sell your location.
+              <h3 className="text-xs font-bold text-[#1C3A27] font-display">Geodesic Radar</h3>
+              <p className="text-[11px] text-[#3B4E41] font-body mt-0.5 leading-relaxed">
+                Verifies when your scholar reaches the 75-metre perimeter of a library or museum to unlock stamp seals and folio cards.
               </p>
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
-              <Sparkles className="w-5 h-5" />
+          <div className="p-4 rounded-2xl parchment-card border border-[#B89758] flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#6B1D23] text-[#FAF8F5] flex items-center justify-center shrink-0 border border-[#B89758]">
+              <Scroll className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-white">Camera for QR & Photo Quests</h3>
-              <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
-                Scan rotating physical QR codes inside galleries and complete visual scavenger photo challenges.
+              <h3 className="text-xs font-bold text-[#1C3A27] font-display">Optical Archival Scanner</h3>
+              <p className="text-[11px] text-[#3B4E41] font-body mt-0.5 leading-relaxed">
+                Scans daily rotating authentication codes at museum desks and validates visual photo challenges.
               </p>
             </div>
           </div>
@@ -373,47 +366,46 @@ export const OnboardingFlow: React.FC<{ onFinish?: () => void }> = ({ onFinish }
           <button
             onClick={() => {
               triggerHaptic('light');
-              // Request browser location prompt
               if ('geolocation' in navigator) {
                 navigator.geolocation.getCurrentPosition(() => {}, () => {});
               }
               setStep('class');
             }}
-            className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-base shadow-[0_5px_0_#b45309] active:translate-y-1 transition flex items-center justify-center gap-2"
+            className="w-full py-4 rounded-2xl bg-[#1C3A27] border border-[#B89758] text-[#E2CA8E] font-display font-bold text-xs uppercase tracking-widest shadow flex items-center justify-center gap-2"
           >
-            <span>Enable & Continue</span>
-            <ChevronRight className="w-5 h-5" />
+            <span>Grant Affordance & Proceed</span>
+            <ChevronRight className="w-4 h-4 text-[#B89758]" />
           </button>
         </div>
       </div>
     );
   }
 
-  // 6. Avatar & Class Selection
+  // 6. Avatar & Explorer Class
   return (
-    <div className="fixed inset-0 z-50 bg-[#090d16] flex flex-col justify-between p-6 overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-[#121A15] flex flex-col justify-between p-6 overflow-y-auto">
       <div className="pt-2">
-        <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">Step 4 of 4</span>
-        <h2 className="text-2xl font-black text-white mt-1 font-['Outfit']">Choose Explorer Identity</h2>
-        <p className="text-xs text-slate-400 mt-1">Pick your avatar & class. Gives you unique flair in Cambridge!</p>
+        <span className="text-[10px] font-bold font-display uppercase tracking-widest text-[#B89758]">Step 4 of 4</span>
+        <h2 className="text-2xl font-bold text-[#FAF8F5] mt-1 font-display">Scholar Identity</h2>
+        <p className="text-xs font-body text-[#D1C7B7] mt-1">Select your collegiate rank & heraldic crest.</p>
       </div>
 
       <div className="my-auto py-4 space-y-4 max-w-sm mx-auto w-full">
         {/* Name input */}
         <div>
-          <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Explorer Tag</label>
+          <label className="text-[10px] font-bold text-[#D1C7B7] uppercase tracking-widest font-display block mb-1">Scholar Title & Name</label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Your adventurer name"
-            className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm font-bold text-white focus:outline-none focus:border-amber-400"
+            placeholder="e.g. Alex Rivera, Scholar"
+            className="w-full px-4 py-2.5 rounded-xl bg-[#1C3A27] border border-[#B89758] text-xs font-display font-bold text-[#FAF8F5] focus:outline-none"
           />
         </div>
 
-        {/* Avatar emoji picker */}
+        {/* Heraldic Emblem Picker */}
         <div>
-          <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Avatar Emblem</label>
+          <label className="text-[10px] font-bold text-[#D1C7B7] uppercase tracking-widest font-display block mb-1">Heraldic Seal</label>
           <div className="flex gap-2 justify-between">
             {AVATAR_OPTIONS.map((em) => (
               <button
@@ -424,8 +416,8 @@ export const OnboardingFlow: React.FC<{ onFinish?: () => void }> = ({ onFinish }
                 }}
                 className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg transition-all ${
                   selectedAvatar === em
-                    ? 'bg-amber-400 text-slate-950 scale-110 shadow-[0_0_10px_rgba(245,158,11,0.5)]'
-                    : 'bg-slate-900 border border-slate-800 hover:border-slate-700'
+                    ? 'bg-[#6B1D23] border-2 border-[#E2CA8E] scale-110 shadow-[0_0_10px_rgba(184,151,88,0.5)]'
+                    : 'bg-[#1C3A27] border border-[#B89758]/40 hover:border-[#B89758]'
                 }`}
               >
                 {em}
@@ -436,7 +428,7 @@ export const OnboardingFlow: React.FC<{ onFinish?: () => void }> = ({ onFinish }
 
         {/* Class Selection */}
         <div>
-          <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Explorer Class</label>
+          <label className="text-[10px] font-bold text-[#D1C7B7] uppercase tracking-widest font-display block mb-1.5">Archival Discipline</label>
           <div className="grid grid-cols-2 gap-2">
             {EXPLORER_CLASSES.map((cls) => {
               const isSelected = selectedClass === cls.id;
@@ -449,13 +441,13 @@ export const OnboardingFlow: React.FC<{ onFinish?: () => void }> = ({ onFinish }
                   }}
                   className={`p-3 rounded-2xl border text-left transition-all ${
                     isSelected
-                      ? 'bg-indigo-950 border-amber-400 shadow-md text-white'
-                      : 'bg-slate-900/80 border-slate-800 text-slate-300 hover:border-slate-700'
+                      ? 'bg-[#1C3A27] border-2 border-[#B89758] text-[#FAF8F5] shadow-md'
+                      : 'bg-[#142018] border-[#1C3A27] text-[#D1C7B7] hover:border-[#B89758]/50'
                   }`}
                 >
                   <div className="text-xl mb-1">{cls.icon}</div>
-                  <div className="text-xs font-bold">{cls.title}</div>
-                  <div className="text-[10px] text-amber-300 font-semibold mt-1">{cls.perk}</div>
+                  <div className="text-xs font-bold font-display text-[#E2CA8E]">{cls.title}</div>
+                  <div className="text-[10px] text-[#A6BAAE] font-body mt-0.5 leading-snug">{cls.perk}</div>
                 </button>
               );
             })}
@@ -466,10 +458,10 @@ export const OnboardingFlow: React.FC<{ onFinish?: () => void }> = ({ onFinish }
       <div className="pb-4">
         <button
           onClick={handleFinalSubmit}
-          className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-rose-500 text-slate-950 font-black text-base shadow-[0_6px_0_#9a3412] active:translate-y-1 transition flex items-center justify-center gap-2"
+          className="w-full py-4 rounded-2xl btn-wax-seal border border-[#B89758] text-[#FAF8F5] font-display font-bold text-xs uppercase tracking-widest shadow-xl flex items-center justify-center gap-2"
         >
-          <Sparkles className="w-5 h-5 fill-slate-950" />
-          <span>Enter Cambridge Quest World</span>
+          <Feather className="w-4 h-4 text-[#E2CA8E]" />
+          <span>Enter Cantabrigia Archives</span>
         </button>
       </div>
     </div>
