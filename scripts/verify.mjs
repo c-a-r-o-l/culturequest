@@ -49,14 +49,35 @@ const pointsText = async (page) =>
   check('home has NO streak', (await page.getByText(/streak/i).count()) === 0);
   check('home has NO friend activity', (await page.getByText('Maya', { exact: false }).count()) === 0);
   check('home has NO continue-hunt card', (await page.getByText(/Continue your hunt|Your next hunt/i).count()) === 0);
+  check('home has NO featured challenge', (await page.getByText(/Featured challenge|Start challenge/i).count()) === 0);
 
-  // Featured challenge = Fitzwilliam scavenger hunt → +200 (+50 level-up bonus: 140+150 XP crosses 250)
-  await page.getByRole('button', { name: /Start challenge/ }).click();
-  await page.waitForTimeout(600);
+  // Explore: Leaflet map + pins
+  await page.locator('nav button', { hasText: 'Explore' }).click();
+  await page.waitForTimeout(1500);
+  check('leaflet map container present', await page.locator('.leaflet-container').isVisible());
+  check('no radar pulse animation', (await page.locator('.animate-radar').count()) === 0);
+  check('no +/- zoom control', (await page.locator('.leaflet-control-zoom').count()) === 0);
+  check('adjust-where-you-are pill present', await page.getByRole('button', { name: 'Adjust where you are' }).isVisible());
+  const allPins = await page.locator('.cq-pin-wrap').count();
+  check('8 venue pins on the map', allPins === 8, `${allPins} pins`);
+  await page.getByRole('button', { name: 'Museums' }).click();
+  await page.waitForTimeout(500);
+  const museumPins = await page.locator('.cq-pin-wrap').count();
+  check('Museums filter leaves 4 pins', museumPins === 4, `${museumPins} pins`);
+  await page.getByRole('button', { name: 'All', exact: true }).click();
+  await page.waitForTimeout(500);
+
+  // Fitzwilliam pin → venue sheet → bookmark + open the scavenger quest → complete (+200, +50 level-up bonus)
+  await page.locator('.cq-pin-wrap').first().click();
+  await page.waitForTimeout(700);
+  await page.getByRole('button', { name: 'Bookmark quest' }).first().click();
+  await page.waitForTimeout(300);
+  await page.locator('button', { hasText: 'Treasures of Antiquity' }).first().click();
+  await page.waitForTimeout(700);
   await page.getByRole('button', { name: 'Complete Quest' }).click();
   await page.waitForTimeout(1700);
   const p1 = await pointsText(page);
-  check('featured quest adds +250 incl. level-up bonus', p1.trim() === '590', `${p0.trim()} → ${p1.trim()}`);
+  check('quest adds +250 incl. level-up bonus', p1.trim() === '590', `${p0.trim()} → ${p1.trim()}`);
   await page.getByRole('button', { name: 'Keep exploring' }).click();
   await page.waitForTimeout(500);
   const lvl = page.getByRole('button', { name: 'Continue' });
@@ -67,29 +88,6 @@ const pointsText = async (page) =>
   } else {
     check('level-up modal shown after quest', false);
   }
-
-  // Explore: Leaflet map + pins
-  await page.locator('nav button', { hasText: 'Explore' }).click();
-  await page.waitForTimeout(1500);
-  check('leaflet map container present', await page.locator('.leaflet-container').isVisible());
-  check('no radar pulse animation', (await page.locator('.animate-radar').count()) === 0);
-  check('no +/- zoom control', (await page.locator('.leaflet-control-zoom').count()) === 0);
-  const allPins = await page.locator('.cq-pin-wrap').count();
-  check('8 venue pins on the map', allPins === 8, `${allPins} pins`);
-  await page.getByRole('button', { name: 'Museums' }).click();
-  await page.waitForTimeout(500);
-  const museumPins = await page.locator('.cq-pin-wrap').count();
-  check('Museums filter leaves 4 pins', museumPins === 4, `${museumPins} pins`);
-  await page.getByRole('button', { name: 'All', exact: true }).click();
-  await page.waitForTimeout(500);
-
-  // Bookmark a quest from the Fitzwilliam venue sheet
-  await page.locator('.cq-pin-wrap').first().click();
-  await page.waitForTimeout(700);
-  await page.getByRole('button', { name: 'Bookmark quest' }).first().click();
-  await page.waitForTimeout(300);
-  await page.getByRole('button', { name: 'Close' }).first().click();
-  await page.waitForTimeout(400);
 
   // Quests tab: bookmarked quest appears, no XP anywhere
   await page.locator('nav button', { hasText: 'Quests' }).click();

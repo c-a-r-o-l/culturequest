@@ -163,24 +163,27 @@ export const ExploreMap: React.FC = () => {
         })}
       </div>
 
-      {/* Floating controls */}
-      <div className="absolute right-3 bottom-6 z-40 flex flex-col gap-2">
+      {/* Adjust-where-you-are pill (demo teleport) */}
+      <div className="absolute top-14 right-3 z-40">
+        <button
+          onClick={() => setShowSimNotice((prev) => !prev)}
+          className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-[11px] font-bold shadow-[0_2px_8px_rgba(0,0,0,0.25)] active:scale-95 transition ${
+            isSimulatingLocation ? 'bg-vermilion text-white' : 'bg-white text-ink border border-line'
+          }`}
+        >
+          <Navigation className="w-3.5 h-3.5" />
+          <span>Adjust where you are</span>
+        </button>
+      </div>
+
+      {/* Recenter control */}
+      <div className="absolute right-3 bottom-6 z-40">
         <button
           onClick={handleRecenter}
           title="Recenter on me"
           className="w-10 h-10 rounded-2xl bg-white border border-line text-teal flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.2)] active:scale-95 transition"
         >
           <Crosshair className="w-5 h-5 stroke-[2.5]" />
-        </button>
-
-        <button
-          onClick={() => setShowSimNotice((prev) => !prev)}
-          title="Demo: simulate your location"
-          className={`w-10 h-10 rounded-2xl border flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.2)] active:scale-95 transition ${
-            isSimulatingLocation ? 'bg-vermilion text-white border-vermilion' : 'bg-white border-line text-muted'
-          }`}
-        >
-          <Navigation className="w-4 h-4" />
         </button>
       </div>
 
@@ -189,7 +192,7 @@ export const ExploreMap: React.FC = () => {
         <div className="absolute top-14 left-3 right-3 z-50 p-4 bg-card border border-line rounded-3xl shadow-2xl text-xs text-ink animate-rise">
           <div className="flex items-center justify-between pb-2 border-b border-line">
             <span className="font-bold font-display flex items-center gap-1.5 text-xs">
-              <Navigation className="w-3.5 h-3.5 text-teal" /> Location simulator (demo)
+              <Navigation className="w-3.5 h-3.5 text-teal" /> Adjust your location (demo)
             </span>
             <button onClick={() => setShowSimNotice(false)} className="text-muted hover:text-ink font-bold text-xs">
               ✕

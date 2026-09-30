@@ -3,14 +3,11 @@ import { useApp } from '../../context/AppContext';
 import { NavTab } from '../common/BottomNav';
 import {
   Coins,
-  MapPin,
-  Zap,
   Sparkles,
-  Play,
   ArrowRight,
   Ticket,
 } from 'lucide-react';
-import { triggerHaptic, sound } from '../../utils/audioAndFx';
+import { triggerHaptic } from '../../utils/audioAndFx';
 import { RewardsSection } from '../rewards/RewardsSection';
 
 // Count-up animation for the points balance
@@ -47,12 +44,9 @@ interface HomeViewProps {
 export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
   const {
     user,
-    quests,
-    completedQuestIds,
     venues,
     bookings,
     setSelectedVenue,
-    setActivePlayingQuest,
     getDistanceToVenueMeters,
   } = useApp();
 
@@ -63,12 +57,6 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
 
   // Nearby venues by distance
   const nearby = [...venues].sort((a, b) => getDistanceToVenueMeters(a) - getDistanceToVenueMeters(b)).slice(0, 4);
-
-  // Featured challenge: venue with an event + its open quest
-  const featuredVenue = venues.find((v) => v.featuredEvent);
-  const featuredQuest = featuredVenue
-    ? quests.find((q) => q.venueId === featuredVenue.id && !completedQuestIds.includes(q.id))
-    : undefined;
 
   const latestBooking = bookings[0];
   const bookingVenue = latestBooking ? venues.find((v) => v.id === latestBooking.venueId) : undefined;
@@ -167,34 +155,6 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
           })}
         </div>
       </div>
-
-      {/* Featured challenge */}
-      {featuredVenue && featuredQuest && (
-        <div className="rounded-3xl bg-gold-soft border-2 border-gold p-4">
-          <div className="flex items-center justify-between">
-            <span className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-[#8A6A10]">
-              <Zap className="w-3 h-3 fill-gold text-gold" /> Featured challenge
-            </span>
-            <span className="text-[10px] font-mono text-[#8A6A10] font-bold">
-              {featuredVenue.featuredEvent?.endsIn}
-            </span>
-          </div>
-          <h3 className="text-sm font-black text-ink font-display mt-1.5 leading-snug">{featuredQuest.title}</h3>
-          <p className="text-[11px] text-muted mt-0.5">
-            <MapPin className="w-3 h-3 inline text-vermilion -mt-0.5" /> {featuredVenue.name}
-          </p>
-          <button
-            onClick={() => {
-              triggerHaptic('light');
-              sound.playCoin();
-              setActivePlayingQuest(featuredQuest);
-            }}
-            className="mt-3 px-4 py-2 rounded-full bg-ink text-wall text-xs font-bold flex items-center gap-1.5 active:translate-y-0.5 transition"
-          >
-            <Play className="w-3 h-3 fill-current" /> Start challenge · +{featuredQuest.pointsReward} pts
-          </button>
-        </div>
-      )}
 
       {/* Rewards — offers, vouchers, redemption, all on Home */}
       <div id="rewards-section" className="pt-2 scroll-mt-20">
