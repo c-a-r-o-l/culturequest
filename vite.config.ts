@@ -6,6 +6,9 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(() => {
   return {
+    // Relative asset paths so the build works under GitHub Pages subpaths
+    // (e.g. https://c-a-r-o-l.github.io/culturequest/) and on Vercel alike.
+    base: './',
     plugins: [
       react(),
       tailwindcss(),
@@ -13,18 +16,18 @@ export default defineConfig(() => {
         registerType: 'autoUpdate',
         includeAssets: ['icon.svg'],
         manifest: {
-          id: '/',
+          id: './',
           name: 'CultureQuest - Cultural Discovery Game',
           short_name: 'CultureQuest',
           description: 'A Pokémon GO-style mobile app for cultural discovery in Cambridge: explore maps, check in, complete challenges, and earn real rewards.',
           theme_color: '#F5F6F0',
           background_color: '#F5F6F0',
           display: 'standalone',
-          start_url: '/',
-          scope: '/',
+          start_url: './',
+          scope: './',
           icons: [
             {
-              src: '/icon.svg',
+              src: 'icon.svg',
               sizes: '192x192 512x512',
               type: 'image/svg+xml',
               purpose: 'any',
