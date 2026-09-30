@@ -1,11 +1,9 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
 import { Coins } from 'lucide-react';
-import { PWAInstallButton } from '../pwa/PWAInstallButton';
 
 export const TopBar: React.FC<{ onOpenLevelDetails?: () => void }> = ({ onOpenLevelDetails }) => {
   const { user } = useApp();
-  const xpPercent = Math.min(100, Math.round((user.xp / user.xpToNextLevel) * 100));
 
   return (
     <header className="sticky top-0 z-40 bg-card/90 backdrop-blur-md border-b border-line px-3.5 py-2 pt-safe flex items-center justify-between">
@@ -27,31 +25,17 @@ export const TopBar: React.FC<{ onOpenLevelDetails?: () => void }> = ({ onOpenLe
           <span className="text-xs font-bold text-ink font-display tracking-wide max-w-[110px] truncate">
             {user.name}
           </span>
-          <div className="flex items-center gap-1.5 mt-1">
-            <div className="w-20 h-1.5 bg-line rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gold rounded-full transition-all duration-500"
-                style={{ width: `${xpPercent}%` }}
-              />
-            </div>
-            <span className="text-[9px] font-mono text-muted font-semibold">
-              {user.xp}/{user.xpToNextLevel} XP
-            </span>
-          </div>
+          <span className="text-[9px] font-mono text-muted font-semibold">{user.title}</span>
         </div>
       </button>
 
-      {/* Right: install, streak, points */}
-      <div className="flex items-center gap-2">
-        <PWAInstallButton compact />
-
-        <div
-          title="Points — redeem for rewards"
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gold-soft border border-gold/60 text-ink"
-        >
-          <Coins className="w-3.5 h-3.5 text-gold fill-gold/20" />
-          <span className="text-xs font-bold tracking-tight font-mono">{user.points}</span>
-        </div>
+      {/* Right: points */}
+      <div
+        title="Points — redeem for rewards"
+        className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gold-soft border border-gold/60 text-ink"
+      >
+        <Coins className="w-3.5 h-3.5 text-gold fill-gold/20" />
+        <span className="text-xs font-bold tracking-tight font-mono">{user.points}</span>
       </div>
     </header>
   );

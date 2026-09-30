@@ -84,15 +84,25 @@ const LEVEL_TITLES: { [level: number]: string } = {
   10: 'Master of Arts',
 };
 
+// Level is driven by lifetime points earned (spending never demotes you)
+export const LEVEL_THRESHOLDS = [0, 150, 400, 800, 1400, 2200, 3200, 4500, 6000, 8000, 10000];
+
+const levelForLifetime = (lifetime: number): number => {
+  let level = 1;
+  for (let i = 1; i < LEVEL_THRESHOLDS.length; i++) {
+    if (lifetime >= LEVEL_THRESHOLDS[i]) level = i + 1;
+  }
+  return level;
+};
+
 const DEFAULT_USER: UserProfile = {
   id: 'user-default-1',
   name: 'Alex Rivera',
   avatar: '🧭',
   explorerClass: 'Wanderer',
   level: 2,
-  xp: 140,
-  xpToNextLevel: 250,
   points: 340, // Enough for an instant voucher demo after one quest
+  lifetimePoints: 340,
   interests: ['Art', 'History', 'Science'],
   title: 'Gallery Wanderer',
   stepsWalked: 4820,
@@ -123,7 +133,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [user, setUser] = useState<UserProfile>(() => {
     try {
       const saved = localStorage.getItem(`${STORAGE_KEY}_user`);
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved) as Partial<UserProfile>;
+        // Migrate older saves that had xp/xpToNextLevel instead of lifetimePoints
+        return {
+          ...DEFAULT_USER,
+          ...parsed,
+          lifetimePoints: parsed.lifetimePoints ?? parsed.points ?? DEFAULT_USER.lifetimePoints,
+        };
+      }
     } catch {
       // ignore
     }
@@ -303,20 +321,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setUserLocation(coords);
   };
 
-  // XP & Level calculations
-  const addXpAndPoints = (xpAmount: number, pointsAmount: number) => {
+  // Points & level calculation — levels are driven by lifetime points earned
+  const addPoints = (pointsAmount: number) => {
     setUser(prev => {
-      let newXp = prev.xp + xpAmount;
-      let newLevel = prev.level;
-      let newXpToNext = prev.xpToNextLevel;
-      let leveledUp = false;
-
-      while (newXp >= newXpToNext) {
-        newXp -= newXpToNext;
-        newLevel += 1;
-        newXpToNext = Math.round(newXpToNext * 1.4);
-        leveledUp = true;
-      }
+      const newLifetime = (prev.lifetimePoints ?? prev.points ?? 0) + pointsAmount;
+      const newLevel = levelForLifetime(newLifetime);
+      const leveledUp = newLevel > prev.level;
 
       const newTitle = LEVEL_TITLES[newLevel] || LEVEL_TITLES[10] || 'Grand Master';
 
@@ -332,9 +342,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       return {
         ...prev,
-        xp: newXp,
         level: newLevel,
-        xpToNextLevel: newXpToNext,
+        lifetimePoints: newLifetime,
         // +50 point level-up bonus, granted for real so the modal isn't lying
         points: prev.points + pointsAmount + (leveledUp ? 50 : 0),
         title: newTitle,
@@ -359,7 +368,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const isFirstTime = !visitedVenueIds.includes(venueId);
     const pointsEarned = isFirstTime ? 100 : 50; // 2x bonus for first visit!
-    const xpEarned = isFirstTime ? 80 : 40;
 
     // Check if there is an uncollected card for this venue to drop
     const venueCards = collectibles.filter(c => c.venueId === venueId);
@@ -374,7 +382,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setCollectedCardIds(prev => [...prev, droppedCard.id]);
     }
 
-    addXpAndPoints(xpEarned, pointsEarned);
+    addPoints(pointsEarned);
 
     sound.playCoin();
     fireConfetti(droppedCard && (droppedCard.rarity === 'Legendary' || droppedCard.rarity === 'Epic') ? 'legendary' : 'normal');
@@ -409,7 +417,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     setBookings(prev => [booking, ...prev]);
 
-    addXpAndPoints(40, 60);
+    addPoints(60);
 
     sound.playCoin();
     fireConfetti('normal');
@@ -454,7 +462,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     }
 
-    addXpAndPoints(quest.xpReward, quest.pointsReward);
+    addPoints(quest.pointsReward);
 
     sound.playVictory();
     fireConfetti(droppedCard?.rarity === 'Legendary' ? 'legendary' : 'normal');
@@ -586,7 +594,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       description: questData.description || 'Custom museum quest created by partner.',
       difficulty: questData.difficulty || 'Medium',
       pointsReward: questData.pointsReward || 150,
-      xpReward: questData.xpReward || 100,
       estimatedMinutes: questData.estimatedMinutes || 15,
       steps: questData.steps || [
         {

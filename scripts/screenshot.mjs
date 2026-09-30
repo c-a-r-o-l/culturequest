@@ -76,8 +76,10 @@ const geo = {
   await page.waitForTimeout(700);
   await page.screenshot({ path: 'shots/desk-10-quests.jpg', type: 'jpeg', quality: 70 });
 
-  // Rewards → voucher
-  await page.locator('nav button', { hasText: 'Rewards' }).click();
+  // Rewards (now on Home) → voucher
+  await page.locator('nav button', { hasText: 'Home' }).click();
+  await page.waitForTimeout(700);
+  await page.getByRole('button', { name: 'Redeem' }).click();
   await page.waitForTimeout(700);
   await page.screenshot({ path: 'shots/desk-11-rewards.jpg', type: 'jpeg', quality: 70 });
   await page.getByRole('button', { name: 'Get voucher' }).first().click();

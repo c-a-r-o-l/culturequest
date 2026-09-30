@@ -43,8 +43,11 @@ export const ExploreMap: React.FC = () => {
     const map = L.map(containerRef.current, {
       center: CAMBRIDGE_CENTER,
       zoom: 15,
-      zoomControl: true,
-      scrollWheelZoom: false, // page scrolls; zoom via buttons or pinch
+      zoomControl: false, // no +/- buttons — gestures zoom
+      scrollWheelZoom: true, // wheel/pinch-trackpad zooms
+      doubleClickZoom: false, // clicks pan the map, they don't zoom
+      touchZoom: true, // pinch to zoom
+      dragging: true, // click-drag moves the map
     });
     mapRef.current = map;
 

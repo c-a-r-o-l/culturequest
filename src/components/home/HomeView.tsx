@@ -11,6 +11,7 @@ import {
   Ticket,
 } from 'lucide-react';
 import { triggerHaptic, sound } from '../../utils/audioAndFx';
+import { RewardsSection } from '../rewards/RewardsSection';
 
 // Count-up animation for the points balance
 function useAnimatedNumber(target: number, duration = 700) {
@@ -99,7 +100,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
           <button
             onClick={() => {
               triggerHaptic('light');
-              onNavigate('rewards');
+              document.getElementById('rewards-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }}
             className="px-4 py-2.5 rounded-full bg-gold text-ink text-xs font-bold flex items-center gap-1.5 shadow-[0_3px_0_rgba(0,0,0,0.15)] active:translate-y-0.5 transition"
           >
@@ -194,6 +195,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
           </button>
         </div>
       )}
+
+      {/* Rewards — offers, vouchers, redemption, all on Home */}
+      <div id="rewards-section" className="pt-2 scroll-mt-20">
+        <RewardsSection />
+      </div>
     </div>
   );
 };

@@ -107,7 +107,6 @@ export const QuestPlayModal: React.FC<QuestPlayModalProps> = ({ quest, onClose }
                 <span className={`px-2 py-0.5 rounded-full uppercase tracking-wider ${meta.chip}`}>
                   {meta.label}
                 </span>
-                <span className="text-muted">{quest.difficulty}</span>
                 <span className="text-muted flex items-center gap-0.5">
                   <Clock className="w-3 h-3" /> ~{quest.estimatedMinutes} min
                 </span>
@@ -151,13 +150,10 @@ export const QuestPlayModal: React.FC<QuestPlayModalProps> = ({ quest, onClose }
 
             {/* Stub: reward + complete */}
             <div className="p-5 flex items-center justify-between gap-3">
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-gold" />
-                  <span className="text-xl font-black font-mono text-ink">+{quest.pointsReward}</span>
-                  <span className="text-xs font-bold text-muted">pts</span>
-                </div>
-                <div className="text-[10px] font-mono text-muted">+{quest.xpReward} XP</div>
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-gold" />
+                <span className="text-xl font-black font-mono text-ink">+{quest.pointsReward}</span>
+                <span className="text-xs font-bold text-muted">pts</span>
               </div>
 
               <button

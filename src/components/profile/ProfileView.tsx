@@ -15,6 +15,7 @@ import {
   X,
 } from 'lucide-react';
 import { sound, triggerHaptic } from '../../utils/audioAndFx';
+import { LEVEL_THRESHOLDS } from '../../context/AppContext';
 
 export const ProfileView: React.FC<{ onOpenOnboarding: () => void }> = ({ onOpenOnboarding }) => {
   const {
@@ -79,18 +80,12 @@ export const ProfileView: React.FC<{ onOpenOnboarding: () => void }> = ({ onOpen
           </div>
         </div>
 
-        {/* XP bar */}
-        <div className="mt-4 pt-3 border-t border-line">
-          <div className="flex items-center justify-between text-[10px] text-muted mb-1">
-            <span>Next level: {user.level + 1}</span>
-            <span className="font-mono text-ink">{user.xp} / {user.xpToNextLevel} XP</span>
-          </div>
-          <div className="h-2 w-full bg-line rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gold transition-all duration-500"
-              style={{ width: `${Math.min(100, Math.round((user.xp / user.xpToNextLevel) * 100))}%` }}
-            />
-          </div>
+        {/* Lifetime points */}
+        <div className="mt-4 pt-3 border-t border-line flex items-center justify-between text-[10px] text-muted">
+          <span>
+            Next level: {LEVEL_THRESHOLDS[user.level] ? `${LEVEL_THRESHOLDS[user.level].toLocaleString()} pts` : 'maxed out'}
+          </span>
+          <span className="font-mono text-ink">{user.lifetimePoints.toLocaleString()} lifetime pts</span>
         </div>
       </div>
 

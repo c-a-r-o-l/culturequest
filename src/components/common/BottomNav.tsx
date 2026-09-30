@@ -1,8 +1,8 @@
 import React from 'react';
-import { Map, ListChecks, Ticket, User, House } from 'lucide-react';
+import { Map, ListChecks, User, House } from 'lucide-react';
 import { triggerHaptic } from '../../utils/audioAndFx';
 
-export type NavTab = 'home' | 'explore' | 'quests' | 'rewards' | 'profile';
+export type NavTab = 'home' | 'explore' | 'quests' | 'profile';
 
 interface BottomNavProps {
   activeTab: NavTab;
@@ -19,13 +19,12 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     { id: 'home', label: 'Home', icon: House },
     { id: 'explore', label: 'Explore', icon: Map },
     { id: 'quests', label: 'Quests', icon: ListChecks, badge: bookmarkedQuestsCount },
-    { id: 'rewards', label: 'Rewards', icon: Ticket },
     { id: 'profile', label: 'You', icon: User },
   ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-md border-t border-line px-2 pb-safe pt-1.5">
-      <div className="max-w-md mx-auto grid grid-cols-5 gap-1">
+      <div className="max-w-md mx-auto grid grid-cols-4 gap-1">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;

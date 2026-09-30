@@ -12,9 +12,8 @@ export interface UserProfile {
   avatar: string;
   explorerClass: ExplorerClass;
   level: number;
-  xp: number;
-  xpToNextLevel: number;
   points: number;
+  lifetimePoints: number;
   lastCheckinDate?: string;
   interests: string[];
   title: string;
@@ -72,7 +71,6 @@ export interface Quest {
   description: string;
   difficulty: 'Easy' | 'Medium' | 'Challenging';
   pointsReward: number;
-  xpReward: number;
   estimatedMinutes: number;
   steps: QuestStep[];
   guaranteedCardId?: string;

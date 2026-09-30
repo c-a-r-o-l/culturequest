@@ -43,7 +43,6 @@ export const PartnerDashboard: React.FC = () => {
       title: questTitle,
       type: questType,
       pointsReward: questPoints,
-      xpReward: Math.round(questPoints * 0.75),
       steps: [
         {
           id: 's-' + Date.now(),

@@ -7,13 +7,11 @@ import {
   Clock,
   Sparkles,
   Users,
-  Navigation,
   QrCode,
   Share2,
   Bookmark,
   CheckCircle2,
   Play,
-  Lock,
   Check,
   Ticket,
 } from 'lucide-react';
@@ -44,8 +42,6 @@ export const VenueDetailModal: React.FC<VenueDetailModalProps> = ({
 }) => {
   const {
     visitedVenueIds,
-    collectibles,
-    collectedCardIds,
     quests,
     completedQuestIds,
     bookmarkedQuestIds,
@@ -60,15 +56,18 @@ export const VenueDetailModal: React.FC<VenueDetailModalProps> = ({
   const [saved, setSaved] = useState(false);
 
   const isVisited = visitedVenueIds.includes(venue.id);
-  const distance = getDistanceToVenueMeters(venue);
-  const isWithinRadius = distance <= venue.radiusMeters;
-  const walkMinutes = Math.max(1, Math.round(distance / 80));
+  const isWithinRadius = getDistanceToVenueMeters(venue) <= venue.radiusMeters;
 
   const venueQuests = quests.filter((q) => q.venueId === venue.id);
-  const venueCards = collectibles.filter((c) => c.venueId === venue.id);
 
   const handleGpsCheckin = () => {
     triggerHaptic('medium');
+    if (!isWithinRadius) {
+      // Demo: out of range — teleport there, then check in
+      teleportToVenue(venue.id);
+      setTimeout(() => checkInVenue(venue.id, 'gps'), 300);
+      return;
+    }
     const result = checkInVenue(venue.id, 'gps');
     if (!result.success) {
       alert(result.message);
@@ -156,36 +155,6 @@ export const VenueDetailModal: React.FC<VenueDetailModalProps> = ({
             </div>
           </div>
 
-          {/* Proximity */}
-          <div
-            className={`p-3 rounded-2xl border flex items-center justify-between ${
-              isWithinRadius ? 'bg-teal-soft border-teal text-teal' : 'bg-card border-line text-ink'
-            }`}
-          >
-            <div className="flex items-center gap-2.5">
-              <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${isWithinRadius ? 'bg-teal text-white' : 'bg-wall border border-line text-muted'}`}>
-                <Navigation className="w-4 h-4" />
-              </div>
-              <div>
-                <div className="text-xs font-bold">
-                  {isWithinRadius ? "You're in range — ready to check in!" : `${distance}m away (~${walkMinutes} min walk)`}
-                </div>
-                <div className="text-[10px] opacity-80">
-                  {isWithinRadius ? 'Check in to earn points.' : `You need to be within ${venue.radiusMeters}m to check in.`}
-                </div>
-              </div>
-            </div>
-
-            {!isWithinRadius && (
-              <button
-                onClick={() => teleportToVenue(venue.id)}
-                className="px-2.5 py-1.5 rounded-full bg-wall border border-line text-[10px] font-bold text-teal hover:border-teal active:scale-95 transition shrink-0"
-              >
-                Demo: teleport
-              </button>
-            )}
-          </div>
-
           {/* Quests */}
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -216,17 +185,13 @@ export const VenueDetailModal: React.FC<VenueDetailModalProps> = ({
                             <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-vermilion-soft text-vermilion uppercase">
                               {quest.type}
                             </span>
-                            <span className="text-[10px] text-muted font-mono font-bold">{quest.difficulty}</span>
                             <span className="text-[10px] text-muted">• {quest.estimatedMinutes}m</span>
                           </div>
                           <h4 className="text-xs font-bold text-ink font-display mt-1 truncate">{quest.title}</h4>
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0">
-                          <div className="text-right">
-                            <span className="text-xs font-bold text-vermilion font-mono">+{quest.pointsReward} pts</span>
-                            <div className="text-[9px] text-muted font-mono">+{quest.xpReward} XP</div>
-                          </div>
+                          <span className="text-xs font-bold text-vermilion font-mono">+{quest.pointsReward} pts</span>
                           <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold ${isCompleted ? 'bg-teal text-white' : 'bg-vermilion text-white'}`}>
                             {isCompleted ? <Check className="w-4 h-4" /> : <Play className="w-3.5 h-3.5 fill-current" />}
                           </div>
@@ -258,51 +223,6 @@ export const VenueDetailModal: React.FC<VenueDetailModalProps> = ({
             )}
           </div>
 
-          {/* Collectible cards */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xs font-bold text-ink uppercase tracking-widest font-display">
-                Collectible cards ({venueCards.length})
-              </h3>
-              <span className="text-[10px] font-mono text-muted">
-                {venueCards.filter((c) => collectedCardIds.includes(c.id)).length}/{venueCards.length} found
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              {venueCards.map((card) => {
-                const isCollected = collectedCardIds.includes(card.id);
-                return (
-                  <button
-                    key={card.id}
-                    onClick={() => {
-                      triggerHaptic('light');
-                      onInspectCard(card.id);
-                    }}
-                    className={`p-2.5 rounded-2xl border text-left flex items-center gap-2.5 transition ${
-                      isCollected ? 'bg-card border-line hover:border-gold' : 'bg-wall border-line/60 opacity-70'
-                    }`}
-                  >
-                    <div className="w-10 h-10 rounded-xl overflow-hidden bg-line shrink-0 relative">
-                      {isCollected ? (
-                        <img src={card.image} alt={card.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-muted">
-                          <Lock className="w-4 h-4" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-[8px] font-bold font-mono text-gold uppercase">{card.rarity}</div>
-                      <div className={`text-[11px] font-bold truncate ${isCollected ? 'text-ink' : 'text-muted'}`}>
-                        {isCollected ? card.name : 'Not found yet'}
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
         </div>
 
         {/* Bottom actions */}
@@ -321,12 +241,7 @@ export const VenueDetailModal: React.FC<VenueDetailModalProps> = ({
           {venue.isFree ? (
             <button
               onClick={handleGpsCheckin}
-              disabled={!isWithinRadius}
-              className={`flex-1 py-3 px-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition active:translate-y-0.5 ${
-                isWithinRadius
-                  ? 'bg-vermilion text-white shadow-[0_4px_0_rgba(0,0,0,0.12)]'
-                  : 'bg-line text-muted cursor-not-allowed'
-              }`}
+              className="flex-1 py-3 px-4 rounded-2xl bg-vermilion text-white font-bold text-sm flex items-center justify-center gap-2 transition active:translate-y-0.5 shadow-[0_4px_0_rgba(0,0,0,0.12)]"
             >
               <Sparkles className="w-4 h-4" />
               <span>{isVisited ? 'Check in (+50 pts)' : 'Check in (+100 pts first visit)'}</span>

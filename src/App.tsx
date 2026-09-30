@@ -6,7 +6,6 @@ import { HomeView } from './components/home/HomeView';
 import { PitchShell } from './components/common/PitchShell';
 import { ExploreMap } from './components/explore/ExploreMap';
 import { QuestsView } from './components/quests/QuestsView';
-import { RewardsView } from './components/rewards/RewardsView';
 import { ProfileView } from './components/profile/ProfileView';
 import { OnboardingFlow } from './components/onboarding/OnboardingFlow';
 import { VenueDetailModal } from './components/venue/VenueDetailModal';
@@ -69,7 +68,6 @@ function MainApp() {
               {activeTab === 'explore' && <ExploreMap />}
             </div>
             {activeTab === 'quests' && <QuestsView />}
-            {activeTab === 'rewards' && <RewardsView />}
             {activeTab === 'profile' && (
               <ProfileView onOpenOnboarding={() => setShowOnboardingModal(true)} />
             )}

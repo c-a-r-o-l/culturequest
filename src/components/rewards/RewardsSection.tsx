@@ -10,11 +10,15 @@ import {
   HelpCircle,
   X,
   Ticket,
-  Sparkles,
+  Gift,
 } from 'lucide-react';
 import { triggerHaptic, sound } from '../../utils/audioAndFx';
 
-export const RewardsView: React.FC = () => {
+/**
+ * RewardsSection: offers catalog + vouchers, embedded on the Home screen.
+ * All redemption flows (confirm sheet, voucher modal, how-to-earn) live here.
+ */
+export const RewardsSection: React.FC = () => {
   const {
     user,
     rewards,
@@ -75,29 +79,20 @@ export const RewardsView: React.FC = () => {
   };
 
   return (
-    <div className="pb-24 pt-4 px-4 max-w-md mx-auto space-y-4">
-      {/* Balance banner */}
-      <div className="p-4 rounded-3xl bg-gold-soft border border-gold/60 flex items-center justify-between">
-        <div>
-          <span className="text-[10px] font-bold uppercase tracking-widest text-[#8A6A10] block">Your points</span>
-          <div className="flex items-center gap-2 mt-0.5">
-            <Coins className="w-6 h-6 text-gold fill-gold/20" />
-            <span className="text-3xl font-black text-ink font-mono">{user.points}</span>
-          </div>
-          <span className="text-[11px] text-muted block mt-1">
-            Spend them on vouchers at local shops & cafés
-          </span>
-        </div>
-
+    <div className="space-y-4">
+      {/* Section header */}
+      <div className="flex items-center justify-between px-1">
+        <h2 className="text-xs font-bold text-ink uppercase tracking-widest font-display flex items-center gap-1.5">
+          <Gift className="w-4 h-4 text-gold" /> Rewards
+        </h2>
         <button
           onClick={() => {
             triggerHaptic('light');
             setShowWaysToEarn(true);
           }}
-          className="px-3 py-2 rounded-full bg-white border border-gold/60 text-xs font-bold text-[#8A6A10] flex items-center gap-1.5 shadow-sm"
+          className="text-[11px] font-bold text-teal flex items-center gap-1"
         >
-          <HelpCircle className="w-3.5 h-3.5" />
-          <span>How to earn</span>
+          <HelpCircle className="w-3.5 h-3.5" /> How to earn
         </button>
       </div>
 
@@ -381,7 +376,7 @@ export const RewardsView: React.FC = () => {
           <div className="w-full max-w-sm rounded-3xl bg-card border border-line p-5 shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-line">
               <h3 className="text-base font-black text-ink font-display flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-gold" /> How to earn points
+                <Gift className="w-4 h-4 text-gold" /> How to earn points
               </h3>
               <button
                 onClick={() => setShowWaysToEarn(false)}
@@ -402,11 +397,11 @@ export const RewardsView: React.FC = () => {
               </div>
               <div className="p-2.5 rounded-xl bg-wall border border-line flex items-center justify-between">
                 <span>🎟️ Complete a quest</span>
-                <strong className="font-mono text-vermilion">+90–450 pts</strong>
+                <strong className="font-mono text-vermilion">+120–450 pts</strong>
               </div>
               <div className="p-2.5 rounded-xl bg-wall border border-line flex items-center justify-between">
-                <span>🔥 Keep a 7-day streak</span>
-                <strong className="font-mono text-vermilion">+150 pts</strong>
+                <span>🎟️ Book a visit</span>
+                <strong className="font-mono text-vermilion">+60 pts</strong>
               </div>
             </div>
 

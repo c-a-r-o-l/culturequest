@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { QuestType } from '../../types';
-import { Clock, Play, MapPin, Check, ListChecks, Bookmark, Sparkles } from 'lucide-react';
+import { Clock, Play, MapPin, Check, ListChecks, Bookmark, Sparkles, Coins } from 'lucide-react';
 import { triggerHaptic, sound } from '../../utils/audioAndFx';
 
 const TYPE_LABEL: Record<string, string> = {
@@ -102,14 +102,13 @@ export const QuestsView: React.FC = () => {
 
             return (
               <div key={quest.id} className={`ticket rounded-3xl border border-line shadow-sm ${isCompleted ? 'opacity-80' : ''}`}>
-                <div className="p-4 space-y-2.5">
+                <div className="p-4 space-y-2">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold mb-1">
                         <span className="font-bold px-2 py-0.5 rounded-full bg-vermilion-soft text-vermilion uppercase tracking-wider">
                           {TYPE_LABEL[quest.type] || quest.type}
                         </span>
-                        <span className="text-muted">{quest.difficulty}</span>
                         <span className="text-muted flex items-center gap-0.5">
                           <Clock className="w-3 h-3" /> {quest.estimatedMinutes}m
                         </span>
@@ -122,46 +121,30 @@ export const QuestsView: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      {isCompleted ? (
-                        <span className="w-8 h-8 rounded-full bg-teal text-white flex items-center justify-center shrink-0">
-                          <Check className="w-4 h-4 stroke-[3]" />
-                        </span>
-                      ) : (
-                        <div className="text-right">
-                          <div className="text-sm font-bold text-vermilion font-mono">+{quest.pointsReward} pts</div>
-                          <div className="text-[10px] text-muted font-mono">+{quest.xpReward} XP</div>
-                        </div>
-                      )}
-                      <button
-                        onClick={() => {
-                          triggerHaptic('light');
-                          toggleBookmarkQuest(quest.id);
-                        }}
-                        aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark quest'}
-                        className={`w-8 h-8 rounded-full border flex items-center justify-center transition active:scale-90 ${
-                          isBookmarked
-                            ? 'bg-gold-soft border-gold text-[#8A6A10]'
-                            : 'bg-wall border-line text-muted hover:text-ink'
-                        }`}
-                      >
-                        <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-gold text-gold' : ''}`} />
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => {
+                        triggerHaptic('light');
+                        toggleBookmarkQuest(quest.id);
+                      }}
+                      aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark quest'}
+                      className={`w-8 h-8 rounded-full border flex items-center justify-center transition active:scale-90 shrink-0 ${
+                        isBookmarked
+                          ? 'bg-gold-soft border-gold text-[#8A6A10]'
+                          : 'bg-wall border-line text-muted hover:text-ink'
+                      }`}
+                    >
+                      <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-gold text-gold' : ''}`} />
+                    </button>
                   </div>
 
-                  <p className="text-xs text-muted leading-relaxed">{quest.description}</p>
-
-                  {quest.expiresIn && (
-                    <div className="text-[10px] text-vermilion font-mono font-bold">⏳ Ends: {quest.expiresIn}</div>
-                  )}
+                  <p className="text-xs text-muted leading-relaxed line-clamp-2">{quest.description}</p>
                 </div>
 
                 <div className="ticket-perf" />
 
-                <div className="p-4 flex items-center justify-between">
-                  <span className="text-[11px] text-muted font-mono">
-                    {quest.steps.length} {quest.steps.length === 1 ? 'step' : 'steps'}
+                <div className="p-3.5 flex items-center justify-between">
+                  <span className="flex items-center gap-1 font-mono font-bold text-sm text-ink">
+                    <Coins className="w-4 h-4 text-gold" /> +{quest.pointsReward} pts
                   </span>
 
                   <button

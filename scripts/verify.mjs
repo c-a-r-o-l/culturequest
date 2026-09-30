@@ -73,6 +73,7 @@ const pointsText = async (page) =>
   await page.waitForTimeout(1500);
   check('leaflet map container present', await page.locator('.leaflet-container').isVisible());
   check('no radar pulse animation', (await page.locator('.animate-radar').count()) === 0);
+  check('no +/- zoom control', (await page.locator('.leaflet-control-zoom').count()) === 0);
   const allPins = await page.locator('.cq-pin-wrap').count();
   check('8 venue pins on the map', allPins === 8, `${allPins} pins`);
   await page.getByRole('button', { name: 'Museums' }).click();
@@ -90,10 +91,11 @@ const pointsText = async (page) =>
   await page.getByRole('button', { name: 'Close' }).first().click();
   await page.waitForTimeout(400);
 
-  // Quests tab: bookmarked quest appears
+  // Quests tab: bookmarked quest appears, no XP anywhere
   await page.locator('nav button', { hasText: 'Quests' }).click();
   await page.waitForTimeout(700);
   check('bookmarked quest visible in Quests', await page.getByText('Treasures of Antiquity Scavenger Hunt', { exact: false }).first().isVisible());
+  check('no XP text on Quests tab', (await page.getByText('XP', { exact: true }).count()) === 0);
 
   // Booking → +60 (Gardens filter → Botanic Garden pin)
   await page.locator('nav button', { hasText: 'Explore' }).click();
@@ -114,13 +116,15 @@ const pointsText = async (page) =>
   await page.getByRole('button', { name: 'Close' }).first().click().catch(() => {});
   await page.waitForTimeout(300);
 
-  // Home shows the booking chip
+  // Home shows the booking chip, rewards section lives here too
   await page.locator('nav button', { hasText: 'Home' }).click();
   await page.waitForTimeout(600);
   check('home shows latest booking chip', await page.getByText('Botanic Garden ·', { exact: false }).first().isVisible());
+  check('rewards section on Home', await page.getByRole('button', { name: 'Redeem' }).isVisible());
+  check('header has no install button', (await page.locator('header button', { hasText: 'Install' }).count()) === 0);
 
-  // Redeem → -150
-  await page.locator('nav button', { hasText: 'Rewards' }).click();
+  // Redeem → -150 (rewards now live on Home)
+  await page.getByRole('button', { name: 'Redeem' }).click();
   await page.waitForTimeout(600);
   await page.getByRole('button', { name: 'Get voucher' }).first().click();
   await page.waitForTimeout(400);
@@ -155,7 +159,7 @@ const pointsText = async (page) =>
   check('mobile has NO pitch backdrop (raw app)', (await page.locator('.pitch-backdrop').count()) === 0);
   const nav = await page.locator('nav').boundingBox();
   check('mobile nav spans 390px width', nav && Math.round(nav.width) === 390, nav && `${Math.round(nav.width)}px`);
-  check('mobile shows 5 tabs', (await page.locator('nav button').count()) === 5);
+  check('mobile shows 4 tabs', (await page.locator('nav button').count()) === 4);
   check('home greeting visible on mobile', await page.getByText('Good ').first().isVisible());
   await page.locator('nav button', { hasText: 'Explore' }).click();
   await page.waitForTimeout(1500);
