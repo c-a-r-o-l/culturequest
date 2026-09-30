@@ -6,7 +6,6 @@ import { HomeView } from './components/home/HomeView';
 import { PitchShell } from './components/common/PitchShell';
 import { ExploreMap } from './components/explore/ExploreMap';
 import { QuestsView } from './components/quests/QuestsView';
-import { CollectionView } from './components/collection/CollectionView';
 import { RewardsView } from './components/rewards/RewardsView';
 import { ProfileView } from './components/profile/ProfileView';
 import { OnboardingFlow } from './components/onboarding/OnboardingFlow';
@@ -32,6 +31,7 @@ function MainApp() {
     partnerMode,
     collectibles,
     quests,
+    bookmarkedQuestIds,
     completedQuestIds,
   } = useApp();
 
@@ -43,8 +43,10 @@ function MainApp() {
     return <OnboardingFlow onFinish={() => setShowOnboardingModal(false)} />;
   }
 
-  // Open quests badge count
-  const openQuestsCount = quests.filter((q) => !completedQuestIds.includes(q.id)).length;
+  // Badge: bookmarked quests still to complete
+  const bookmarkedQuestsCount = quests.filter(
+    (q) => bookmarkedQuestIds.includes(q.id) && !completedQuestIds.includes(q.id)
+  ).length;
 
   return (
     <div className="h-full overflow-y-auto bg-wall text-ink flex flex-col font-sans">
@@ -67,7 +69,6 @@ function MainApp() {
               {activeTab === 'explore' && <ExploreMap />}
             </div>
             {activeTab === 'quests' && <QuestsView />}
-            {activeTab === 'collection' && <CollectionView />}
             {activeTab === 'rewards' && <RewardsView />}
             {activeTab === 'profile' && (
               <ProfileView onOpenOnboarding={() => setShowOnboardingModal(true)} />
@@ -81,7 +82,7 @@ function MainApp() {
         <BottomNav
           activeTab={activeTab}
           onSelectTab={setActiveTab}
-          openQuestsCount={openQuestsCount}
+          bookmarkedQuestsCount={bookmarkedQuestsCount}
         />
       )}
 

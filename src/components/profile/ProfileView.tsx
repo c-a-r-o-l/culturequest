@@ -3,7 +3,6 @@ import { useApp } from '../../context/AppContext';
 import { INITIAL_LEADERBOARD, INITIAL_ACTIVITY_FEED } from '../../data/mockData';
 import {
   Settings,
-  Flame,
   Footprints,
   PoundSterling,
   Compass,
@@ -135,35 +134,6 @@ export const ProfileView: React.FC<{ onOpenOnboarding: () => void }> = ({ onOpen
             <div className="text-lg font-bold text-ink font-mono">£{user.localSavingsGbp.toFixed(2)}</div>
             <div className="text-[9px] text-muted uppercase font-bold">Saved locally</div>
           </div>
-        </div>
-      </div>
-
-      {/* Streak */}
-      <div className="p-4 rounded-3xl bg-card border border-line space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Flame className="w-5 h-5 fill-vermilion text-vermilion" />
-            <h3 className="text-xs font-bold text-ink font-display">Daily streak</h3>
-          </div>
-          <span className="text-xs font-mono font-bold text-vermilion">{user.streak} days</span>
-        </div>
-
-        <div className="grid grid-cols-7 gap-1 text-center">
-          {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => {
-            const isFilled = i < user.streak;
-            return (
-              <div key={i} className="flex flex-col items-center gap-1">
-                <div
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs transition ${
-                    isFilled ? 'bg-vermilion text-white' : 'bg-wall border border-line text-muted'
-                  }`}
-                >
-                  {isFilled ? '🔥' : '•'}
-                </div>
-                <span className="text-[9px] font-bold text-muted">{day}</span>
-              </div>
-            );
-          })}
         </div>
       </div>
 

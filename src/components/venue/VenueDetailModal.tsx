@@ -48,6 +48,8 @@ export const VenueDetailModal: React.FC<VenueDetailModalProps> = ({
     collectedCardIds,
     quests,
     completedQuestIds,
+    bookmarkedQuestIds,
+    toggleBookmarkQuest,
     getDistanceToVenueMeters,
     checkInVenue,
     teleportToVenue,
@@ -196,36 +198,56 @@ export const VenueDetailModal: React.FC<VenueDetailModalProps> = ({
               <div className="space-y-2">
                 {venueQuests.map((quest) => {
                   const isCompleted = completedQuestIds.includes(quest.id);
+                  const isBookmarked = bookmarkedQuestIds.includes(quest.id);
                   return (
-                    <button
+                    <div
                       key={quest.id}
-                      onClick={() => {
-                        triggerHaptic('light');
-                        onOpenQuest(quest.id);
-                      }}
-                      className="w-full p-3 rounded-2xl bg-card border border-line hover:border-vermilion text-left flex items-center justify-between transition group"
+                      className="p-3 rounded-2xl bg-card border border-line hover:border-vermilion flex items-center justify-between transition"
                     >
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-vermilion-soft text-vermilion uppercase">
-                            {quest.type}
-                          </span>
-                          <span className="text-[10px] text-muted font-mono font-bold">{quest.difficulty}</span>
-                          <span className="text-[10px] text-muted">• {quest.estimatedMinutes}m</span>
+                      <button
+                        onClick={() => {
+                          triggerHaptic('light');
+                          onOpenQuest(quest.id);
+                        }}
+                        className="flex-1 min-w-0 text-left flex items-center justify-between gap-2"
+                      >
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-vermilion-soft text-vermilion uppercase">
+                              {quest.type}
+                            </span>
+                            <span className="text-[10px] text-muted font-mono font-bold">{quest.difficulty}</span>
+                            <span className="text-[10px] text-muted">• {quest.estimatedMinutes}m</span>
+                          </div>
+                          <h4 className="text-xs font-bold text-ink font-display mt-1 truncate">{quest.title}</h4>
                         </div>
-                        <h4 className="text-xs font-bold text-ink font-display mt-1 truncate">{quest.title}</h4>
-                      </div>
 
-                      <div className="flex items-center gap-2 shrink-0">
-                        <div className="text-right">
-                          <span className="text-xs font-bold text-vermilion font-mono">+{quest.pointsReward} pts</span>
-                          <div className="text-[9px] text-muted font-mono">+{quest.xpReward} XP</div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <div className="text-right">
+                            <span className="text-xs font-bold text-vermilion font-mono">+{quest.pointsReward} pts</span>
+                            <div className="text-[9px] text-muted font-mono">+{quest.xpReward} XP</div>
+                          </div>
+                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold ${isCompleted ? 'bg-teal text-white' : 'bg-vermilion text-white'}`}>
+                            {isCompleted ? <Check className="w-4 h-4" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+                          </div>
                         </div>
-                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold ${isCompleted ? 'bg-teal text-white' : 'bg-vermilion text-white'}`}>
-                          {isCompleted ? <Check className="w-4 h-4" /> : <Play className="w-3.5 h-3.5 fill-current" />}
-                        </div>
-                      </div>
-                    </button>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          triggerHaptic('light');
+                          toggleBookmarkQuest(quest.id);
+                        }}
+                        aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark quest'}
+                        className={`ml-2 w-8 h-8 rounded-full border flex items-center justify-center transition active:scale-90 shrink-0 ${
+                          isBookmarked
+                            ? 'bg-gold-soft border-gold text-[#8A6A10]'
+                            : 'bg-wall border-line text-muted hover:text-ink'
+                        }`}
+                      >
+                        <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-gold text-gold' : ''}`} />
+                      </button>
+                    </div>
                   );
                 })}
               </div>

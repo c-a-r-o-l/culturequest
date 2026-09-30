@@ -15,8 +15,6 @@ export interface UserProfile {
   xp: number;
   xpToNextLevel: number;
   points: number;
-  streak: number;
-  streakFreezeTokens: number;
   lastCheckinDate?: string;
   interests: string[];
   title: string;

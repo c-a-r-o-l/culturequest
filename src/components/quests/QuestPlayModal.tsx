@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Quest, QuestType } from '../../types';
 import { useApp } from '../../context/AppContext';
 import {
@@ -35,17 +35,11 @@ const STEP_ICON: Record<string, React.FC<{ className?: string }>> = {
 };
 
 export const QuestPlayModal: React.FC<QuestPlayModalProps> = ({ quest, onClose }) => {
-  const { venues, completeQuest, completedQuestIds, markQuestStarted } = useApp();
+  const { venues, completeQuest, completedQuestIds } = useApp();
   const venue = venues.find((v) => v.id === quest.venueId);
 
   const isCompleted = completedQuestIds.includes(quest.id);
   const [completing, setCompleting] = useState(false);
-
-  // Opening a quest marks it as started, so Home can say "Continue your hunt"
-  useEffect(() => {
-    if (!isCompleted) markQuestStarted(quest.id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quest.id]);
 
   const meta = TYPE_META[quest.type];
   const TypeIcon = meta.icon;

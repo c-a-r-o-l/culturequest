@@ -1,12 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { NavTab } from '../common/BottomNav';
-import { INITIAL_ACTIVITY_FEED } from '../../data/mockData';
 import {
   Coins,
-  Flame,
   MapPin,
-  Clock,
   Zap,
   Sparkles,
   Play,
@@ -51,7 +48,6 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
     user,
     quests,
     completedQuestIds,
-    startedQuestIds,
     venues,
     bookings,
     setSelectedVenue,
@@ -63,14 +59,6 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-
-  // Continue hunt: an in-progress quest first, else the daily quest, else the next open quest
-  const continueQuest =
-    quests.find((q) => startedQuestIds.includes(q.id) && !completedQuestIds.includes(q.id)) ||
-    quests.find((q) => q.isDaily && !completedQuestIds.includes(q.id)) ||
-    quests.find((q) => !completedQuestIds.includes(q.id));
-  const continueVenue = continueQuest ? venues.find((v) => v.id === continueQuest.venueId) : undefined;
-  const isStarted = continueQuest ? startedQuestIds.includes(continueQuest.id) : false;
 
   // Nearby venues by distance
   const nearby = [...venues].sort((a, b) => getDistanceToVenueMeters(a) - getDistanceToVenueMeters(b)).slice(0, 4);
@@ -106,10 +94,6 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
               <Coins className="w-7 h-7 text-gold fill-gold/20" />
               <span className="text-4xl font-black text-ink font-mono tabular-nums">{displayPoints}</span>
             </div>
-            <div className="flex items-center gap-1.5 mt-1.5">
-              <Flame className="w-3.5 h-3.5 fill-vermilion text-vermilion" />
-              <span className="text-[11px] font-bold text-ink">{user.streak}-day streak</span>
-            </div>
           </div>
 
           <button
@@ -126,63 +110,16 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
 
         {/* Latest booking chip */}
         {bookingVenue && latestBooking && (
-          <div className="ticket-perf" />
-        )}
-        {bookingVenue && latestBooking && (
-          <div className="px-4 py-2.5 flex items-center gap-2 text-[11px] font-bold text-teal">
-            <Ticket className="w-3.5 h-3.5" />
-            {bookingVenue.name} · {latestBooking.date} · {latestBooking.time}
-            {latestBooking.tickets > 1 && ` · ${latestBooking.tickets} tickets`}
-          </div>
+          <>
+            <div className="ticket-perf" />
+            <div className="px-4 py-2.5 flex items-center gap-2 text-[11px] font-bold text-teal">
+              <Ticket className="w-3.5 h-3.5" />
+              {bookingVenue.name} · {latestBooking.date} · {latestBooking.time}
+              {latestBooking.tickets > 1 && ` · ${latestBooking.tickets} tickets`}
+            </div>
+          </>
         )}
       </div>
-
-      {/* Continue your hunt */}
-      {continueQuest && (
-        <div className="ticket rounded-3xl border border-vermilion/40 bg-card relative overflow-visible">
-          <div className="p-4 space-y-2.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[9px] font-bold uppercase tracking-widest text-vermilion bg-vermilion-soft px-2.5 py-0.5 rounded-full">
-                {isStarted ? 'Continue your hunt' : 'Your next hunt'}
-              </span>
-              <span className="text-[10px] font-mono text-muted">
-                {continueQuest.steps.length} steps · +{continueQuest.pointsReward} pts
-              </span>
-            </div>
-
-            <h3 className="text-base font-black text-ink font-display leading-snug">{continueQuest.title}</h3>
-            <p className="text-[11px] text-muted flex items-center gap-1">
-              <MapPin className="w-3 h-3 text-vermilion" /> {continueVenue?.name}
-            </p>
-
-            {/* Progress bar (decorative for the one-click demo) */}
-            <div className="h-1.5 bg-line rounded-full overflow-hidden">
-              <div
-                className={`h-full bg-vermilion transition-all duration-500 ${isStarted ? 'w-1/3' : 'w-0'}`}
-              />
-            </div>
-          </div>
-
-          <div className="ticket-perf" />
-
-          <div className="p-3.5 flex items-center justify-between">
-            <span className="text-[11px] font-mono text-muted flex items-center gap-1">
-              <Clock className="w-3 h-3" /> ~{continueQuest.estimatedMinutes} min
-            </span>
-            <button
-              onClick={() => {
-                triggerHaptic('light');
-                sound.playCoin();
-                setActivePlayingQuest(continueQuest);
-              }}
-              className="px-4 py-2 rounded-full bg-vermilion text-white font-bold text-xs flex items-center gap-1.5 shadow-[0_3px_0_rgba(0,0,0,0.12)] active:translate-y-0.5 transition"
-            >
-              <Play className="w-3 h-3 fill-current" />
-              {isStarted ? 'Continue' : 'Start'}
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Nearby venues */}
       <div>
@@ -242,7 +179,9 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
             </span>
           </div>
           <h3 className="text-sm font-black text-ink font-display mt-1.5 leading-snug">{featuredQuest.title}</h3>
-          <p className="text-[11px] text-muted mt-0.5">{featuredVenue.name}</p>
+          <p className="text-[11px] text-muted mt-0.5">
+            <MapPin className="w-3 h-3 inline text-vermilion -mt-0.5" /> {featuredVenue.name}
+          </p>
           <button
             onClick={() => {
               triggerHaptic('light');
@@ -255,32 +194,6 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
           </button>
         </div>
       )}
-
-      {/* Friend activity */}
-      <div>
-        <h2 className="text-xs font-bold text-ink uppercase tracking-widest font-display mb-2 px-1">
-          Friend activity
-        </h2>
-        <div className="space-y-2">
-          {INITIAL_ACTIVITY_FEED.slice(0, 3).map((act) => (
-            <div key={act.id} className="p-2.5 rounded-2xl bg-card border border-line flex items-center gap-2.5 text-xs">
-              <span className="text-base">{act.userAvatar}</span>
-              <div className="flex-1 min-w-0">
-                <p className="text-ink truncate">
-                  <strong className="font-display">{act.userName}</strong> {act.action}{' '}
-                  <strong className="text-vermilion font-display">{act.targetName}</strong>
-                </p>
-                <p className="text-[10px] text-muted font-mono">{act.timeAgo}</p>
-              </div>
-              {act.badge && (
-                <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-teal-soft text-teal shrink-0">
-                  {act.badge}
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 };

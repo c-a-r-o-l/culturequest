@@ -397,29 +397,6 @@ export const INITIAL_QUESTS: Quest[] = [
       },
     ],
   },
-  {
-    id: 'quest-daily-quick',
-    venueId: 'venue-fitzwilliam',
-    title: '15-Minute Culture Dose: The Golden Beetle',
-    type: 'daily',
-    difficulty: 'Easy',
-    description: 'A bite-sized challenge for quick coffee breaks: uncover one curiosity!',
-    pointsReward: 90,
-    xpReward: 60,
-    estimatedMinutes: 5,
-    isDaily: true,
-    steps: [
-      {
-        id: 'd1',
-        title: 'The Sacred Scarab',
-        description: 'In ancient Egyptian mythology, which deity did the rolling dung beetle scarab represent as the rising sun?',
-        type: 'trivia',
-        options: ['Khepri', 'Anubis', 'Osiris', 'Sobek'],
-        correctOptionIndex: 0,
-        explanation: 'Khepri represented renewal, creation, and the morning sun pushing across the horizon.',
-      },
-    ],
-  },
 ];
 
 export const INITIAL_COLLECTIBLES: CollectibleCard[] = [

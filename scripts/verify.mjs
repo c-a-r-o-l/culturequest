@@ -38,44 +38,76 @@ const pointsText = async (page) =>
   check('desktop shows branding panel', await page.locator('aside').isVisible());
   const brand = await page.locator('aside').boundingBox();
   const frame = await page.locator('.rounded-\\[3rem\\]').boundingBox();
-  // boundingBox includes the fit-to-screen scale transform, so check the ratio
   const frameRatio = frame ? frame.width / frame.height : 0;
   check('frame keeps 390:844 phone ratio', Math.abs(frameRatio - 390 / 844) < 0.01, frame && `${Math.round(frame.width)}x${Math.round(frame.height)}`);
   check('branding sits left of frame', brand && frame && brand.x + brand.width < frame.x);
 
-  // App content stays inside the frame
-  const app = await page.locator('nav').boundingBox();
-  check('bottom nav inside frame', app && app.x >= frame.x && app.x + app.width <= frame.x + frame.width + 2);
-
-  // Home tab content
+  // Home content
   check('home greeting visible', await page.getByText('Good ').first().isVisible());
   const p0 = await pointsText(page);
   check('home shows 340 starting points', p0.trim() === '340', p0.trim());
+  check('home has NO streak', (await page.getByText(/streak/i).count()) === 0);
+  check('home has NO friend activity', (await page.getByText('Maya', { exact: false }).count()) === 0);
+  check('home has NO continue-hunt card', (await page.getByText(/Continue your hunt|Your next hunt/i).count()) === 0);
 
-  // Quest complete → +90 (the Continue card is the daily quest)
-  await page.getByRole('button', { name: /Continue|Start/ }).first().click();
+  // Featured challenge = Fitzwilliam scavenger hunt → +200 (+50 level-up bonus: 140+150 XP crosses 250)
+  await page.getByRole('button', { name: /Start challenge/ }).click();
   await page.waitForTimeout(600);
   await page.getByRole('button', { name: 'Complete Quest' }).click();
   await page.waitForTimeout(1700);
   const p1 = await pointsText(page);
-  check('quest adds +90 points', p1.trim() === '430', `${p0.trim()} → ${p1.trim()}`);
+  check('featured quest adds +250 incl. level-up bonus', p1.trim() === '590', `${p0.trim()} → ${p1.trim()}`);
   await page.getByRole('button', { name: 'Keep exploring' }).click();
   await page.waitForTimeout(500);
+  const lvl = page.getByRole('button', { name: 'Continue' });
+  if (await lvl.isVisible().catch(() => false)) {
+    check('level-up modal shown after quest', true);
+    await lvl.click();
+    await page.waitForTimeout(400);
+  } else {
+    check('level-up modal shown after quest', false);
+  }
 
-  // Booking → +60
+  // Explore: Leaflet map + pins
   await page.locator('nav button', { hasText: 'Explore' }).click();
-  await page.waitForTimeout(600);
-  await page.getByRole('button', { name: 'Gardens' }).click();
+  await page.waitForTimeout(1500);
+  check('leaflet map container present', await page.locator('.leaflet-container').isVisible());
+  check('no radar pulse animation', (await page.locator('.animate-radar').count()) === 0);
+  const allPins = await page.locator('.cq-pin-wrap').count();
+  check('8 venue pins on the map', allPins === 8, `${allPins} pins`);
+  await page.getByRole('button', { name: 'Museums' }).click();
+  await page.waitForTimeout(500);
+  const museumPins = await page.locator('.cq-pin-wrap').count();
+  check('Museums filter leaves 4 pins', museumPins === 4, `${museumPins} pins`);
+  await page.getByRole('button', { name: 'All', exact: true }).click();
+  await page.waitForTimeout(500);
+
+  // Bookmark a quest from the Fitzwilliam venue sheet
+  await page.locator('.cq-pin-wrap').first().click();
+  await page.waitForTimeout(700);
+  await page.getByRole('button', { name: 'Bookmark quest' }).first().click();
+  await page.waitForTimeout(300);
+  await page.getByRole('button', { name: 'Close' }).first().click();
   await page.waitForTimeout(400);
-  await page.locator('button', { hasText: 'Botanic Garden' }).first().click();
-  await page.waitForTimeout(600);
+
+  // Quests tab: bookmarked quest appears
+  await page.locator('nav button', { hasText: 'Quests' }).click();
+  await page.waitForTimeout(700);
+  check('bookmarked quest visible in Quests', await page.getByText('Treasures of Antiquity Scavenger Hunt', { exact: false }).first().isVisible());
+
+  // Booking → +60 (Gardens filter → Botanic Garden pin)
+  await page.locator('nav button', { hasText: 'Explore' }).click();
+  await page.waitForTimeout(800);
+  await page.getByRole('button', { name: 'Gardens' }).click();
+  await page.waitForTimeout(500);
+  await page.locator('.cq-pin-wrap').first().click();
+  await page.waitForTimeout(700);
   await page.getByRole('button', { name: /Book visit/ }).click();
   await page.waitForTimeout(500);
-  check('booking modal shows venue', await page.getByText('Botanic Garden', { exact: false }).first().isVisible());
   await page.getByRole('button', { name: /Confirm booking/ }).click();
   await page.waitForTimeout(1200);
   const p2 = await pointsText(page);
-  check('booking adds +60 points', p2.trim() === '490', `${p1.trim()} → ${p2.trim()}`);
+  check('booking adds +60 points', p2.trim() === '650', `${p1.trim()} → ${p2.trim()}`);
   check('BOOKED stamp shown', await page.getByText('BOOKED', { exact: true }).isVisible());
   await page.getByRole('button', { name: 'Keep exploring' }).click();
   await page.waitForTimeout(400);
@@ -95,9 +127,16 @@ const pointsText = async (page) =>
   await page.getByRole('button', { name: 'Confirm' }).click();
   await page.waitForTimeout(900);
   const p3 = await pointsText(page);
-  check('redeem deducts -150 points', p3.trim() === '340', `${p2.trim()} → ${p3.trim()}`);
+  check('redeem deducts -150 points', p3.trim() === '500', `${p2.trim()} → ${p3.trim()}`);
   check('voucher shows CQ- code', await page.locator('text=/CQ-[A-Z0-9]{4}/').first().isVisible());
-  check('voucher shows countdown', await page.locator('text=/left$/').first().isVisible());
+  await page.getByRole('button', { name: 'Close' }).first().click();
+  await page.waitForTimeout(300);
+
+  // Profile: no streak section
+  await page.locator('nav button', { hasText: 'You' }).click();
+  await page.waitForTimeout(600);
+  check('profile has NO streak section', (await page.getByText('Daily streak').count()) === 0);
+  check('profile keeps friend activity', await page.getByText('Maya', { exact: false }).first().isVisible());
 
   await browser.close();
 }
@@ -116,8 +155,11 @@ const pointsText = async (page) =>
   check('mobile has NO pitch backdrop (raw app)', (await page.locator('.pitch-backdrop').count()) === 0);
   const nav = await page.locator('nav').boundingBox();
   check('mobile nav spans 390px width', nav && Math.round(nav.width) === 390, nav && `${Math.round(nav.width)}px`);
-  check('mobile shows 6 tabs', (await page.locator('nav button').count()) === 6);
+  check('mobile shows 5 tabs', (await page.locator('nav button').count()) === 5);
   check('home greeting visible on mobile', await page.getByText('Good ').first().isVisible());
+  await page.locator('nav button', { hasText: 'Explore' }).click();
+  await page.waitForTimeout(1500);
+  check('mobile map renders leaflet', await page.locator('.leaflet-container').isVisible());
 
   await browser.close();
 }

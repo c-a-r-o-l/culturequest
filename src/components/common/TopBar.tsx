@@ -1,6 +1,6 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
-import { Flame, Coins } from 'lucide-react';
+import { Coins } from 'lucide-react';
 import { PWAInstallButton } from '../pwa/PWAInstallButton';
 
 export const TopBar: React.FC<{ onOpenLevelDetails?: () => void }> = ({ onOpenLevelDetails }) => {
@@ -44,14 +44,6 @@ export const TopBar: React.FC<{ onOpenLevelDetails?: () => void }> = ({ onOpenLe
       {/* Right: install, streak, points */}
       <div className="flex items-center gap-2">
         <PWAInstallButton compact />
-
-        <div
-          title={`${user.streak} day streak`}
-          className="flex items-center gap-1 px-2 py-1 rounded-full bg-vermilion-soft text-vermilion"
-        >
-          <Flame className="w-3.5 h-3.5 fill-vermilion" />
-          <span className="text-xs font-bold font-mono">{user.streak}d</span>
-        </div>
 
         <div
           title="Points — redeem for rewards"

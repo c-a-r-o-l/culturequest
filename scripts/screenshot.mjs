@@ -31,8 +31,8 @@ const geo = {
   // Shell + Home (default tab)
   await page.screenshot({ path: 'shots/desk-01-shell-home.jpg', type: 'jpeg', quality: 70 });
 
-  // Continue hunt → quest → complete → reward stamp
-  await page.getByRole('button', { name: /Continue|Start/ }).first().click();
+  // Featured challenge → quest → complete → reward stamp
+  await page.getByRole('button', { name: /Start challenge/ }).click();
   await page.waitForTimeout(700);
   await page.screenshot({ path: 'shots/desk-02-quest.jpg', type: 'jpeg', quality: 70 });
   await page.getByRole('button', { name: 'Complete Quest' }).click();
@@ -49,34 +49,42 @@ const geo = {
     await page.waitForTimeout(400);
   }
 
-  // Explore → Gardens filter → Botanic Garden → Book visit
+  // Explore: Leaflet map
   await page.locator('nav button', { hasText: 'Explore' }).click();
-  await page.waitForTimeout(700);
+  await page.waitForTimeout(1800);
+  await page.screenshot({ path: 'shots/desk-06-map.jpg', type: 'jpeg', quality: 70 });
+
+  // Gardens filter → Botanic Garden pin → book
   await page.getByRole('button', { name: 'Gardens' }).click();
-  await page.waitForTimeout(400);
-  await page.locator('button', { hasText: 'Botanic Garden' }).first().click();
+  await page.waitForTimeout(500);
+  await page.locator('.cq-pin-wrap').first().click();
   await page.waitForTimeout(700);
-  await page.screenshot({ path: 'shots/desk-06-venue.jpg', type: 'jpeg', quality: 70 });
+  await page.screenshot({ path: 'shots/desk-07-venue.jpg', type: 'jpeg', quality: 70 });
   await page.getByRole('button', { name: /Book visit/ }).click();
   await page.waitForTimeout(600);
-  await page.screenshot({ path: 'shots/desk-07-booking.jpg', type: 'jpeg', quality: 70 });
+  await page.screenshot({ path: 'shots/desk-08-booking.jpg', type: 'jpeg', quality: 70 });
   await page.getByRole('button', { name: /Confirm booking/ }).click();
   await page.waitForTimeout(900);
-  await page.screenshot({ path: 'shots/desk-08-booked.jpg', type: 'jpeg', quality: 70 });
+  await page.screenshot({ path: 'shots/desk-09-booked.jpg', type: 'jpeg', quality: 70 });
   await page.getByRole('button', { name: 'Keep exploring' }).click();
   await page.waitForTimeout(400);
   await page.getByRole('button', { name: 'Close' }).first().click().catch(() => {});
   await page.waitForTimeout(400);
 
+  // Quests: bookmarked + completed
+  await page.locator('nav button', { hasText: 'Quests' }).click();
+  await page.waitForTimeout(700);
+  await page.screenshot({ path: 'shots/desk-10-quests.jpg', type: 'jpeg', quality: 70 });
+
   // Rewards → voucher
   await page.locator('nav button', { hasText: 'Rewards' }).click();
   await page.waitForTimeout(700);
-  await page.screenshot({ path: 'shots/desk-09-rewards.jpg', type: 'jpeg', quality: 70 });
+  await page.screenshot({ path: 'shots/desk-11-rewards.jpg', type: 'jpeg', quality: 70 });
   await page.getByRole('button', { name: 'Get voucher' }).first().click();
   await page.waitForTimeout(500);
   await page.getByRole('button', { name: 'Confirm' }).click();
   await page.waitForTimeout(800);
-  await page.screenshot({ path: 'shots/desk-10-voucher.jpg', type: 'jpeg', quality: 70 });
+  await page.screenshot({ path: 'shots/desk-12-voucher.jpg', type: 'jpeg', quality: 70 });
 
   await browser.close();
 }
@@ -95,7 +103,7 @@ const geo = {
   await onboard(page);
   await page.screenshot({ path: 'shots/mob-01-home.jpg', type: 'jpeg', quality: 70 });
   await page.locator('nav button', { hasText: 'Explore' }).click();
-  await page.waitForTimeout(700);
+  await page.waitForTimeout(1800);
   await page.screenshot({ path: 'shots/mob-02-map.jpg', type: 'jpeg', quality: 70 });
   await browser.close();
 }

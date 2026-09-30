@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Quest, QuestType } from '../../types';
-import { Clock, Play, MapPin, Zap, Check, ListChecks, Sparkles } from 'lucide-react';
+import { QuestType } from '../../types';
+import { Clock, Play, MapPin, Check, ListChecks, Bookmark, Sparkles } from 'lucide-react';
 import { triggerHaptic, sound } from '../../utils/audioAndFx';
 
 const TYPE_LABEL: Record<string, string> = {
@@ -9,21 +9,26 @@ const TYPE_LABEL: Record<string, string> = {
   trivia: 'Trivia',
   photo: 'Photo hunt',
   route: 'Trail',
-  daily: 'Daily quest',
 };
 
 export const QuestsView: React.FC = () => {
-  const { quests, completedQuestIds, venues, setActivePlayingQuest } = useApp();
+  const {
+    quests,
+    completedQuestIds,
+    bookmarkedQuestIds,
+    toggleBookmarkQuest,
+    venues,
+    setActivePlayingQuest,
+  } = useApp();
 
-  const [activeTab, setActiveTab] = useState<'available' | 'completed'>('available');
+  const [activeTab, setActiveTab] = useState<'bookmarked' | 'completed'>('bookmarked');
   const [typeFilter, setTypeFilter] = useState<'All' | QuestType>('All');
-
-  const dailyQuest = quests.find((q) => q.isDaily);
 
   const displayedQuests = quests.filter((q) => {
     const isDone = completedQuestIds.includes(q.id);
+    const isBookmarked = bookmarkedQuestIds.includes(q.id);
+    if (activeTab === 'bookmarked' && !isBookmarked) return false;
     if (activeTab === 'completed' && !isDone) return false;
-    if (activeTab === 'available' && isDone) return false;
     if (typeFilter !== 'All' && q.type !== typeFilter) return false;
     return true;
   });
@@ -37,66 +42,22 @@ export const QuestsView: React.FC = () => {
           Quests
         </h1>
         <p className="text-xs text-muted mt-0.5">
-          Missions at museums and culture spots. Finish one to earn points you can spend on rewards.
+          Save missions to try them, or look back at the ones you've finished.
         </p>
       </div>
 
-      {/* Daily quest highlight */}
-      {dailyQuest && (
-        <div className="ticket rounded-3xl border-2 border-gold overflow-visible relative shadow-sm">
-          <div className="p-4">
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-[#8A6A10] bg-gold-soft px-2.5 py-0.5 rounded-full">
-                <Zap className="w-3 h-3 fill-gold text-gold" /> Daily Quest
-              </span>
-              <span className="text-[10px] text-muted font-mono">Resets tomorrow</span>
-            </div>
-
-            <h3 className="text-base font-bold text-ink font-display mt-2">{dailyQuest.title}</h3>
-            <p className="text-xs text-muted mt-1 leading-relaxed line-clamp-2">{dailyQuest.description}</p>
-          </div>
-
-          <div className="ticket-perf" />
-
-          <div className="p-4 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs">
-              <span className="text-gold font-mono font-bold flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5" /> +{dailyQuest.pointsReward} pts
-              </span>
-              <span className="text-muted">•</span>
-              <span className="text-muted text-[11px]">~{dailyQuest.estimatedMinutes} min</span>
-            </div>
-
-            <button
-              onClick={() => {
-                triggerHaptic('light');
-                sound.playCoin();
-                setActivePlayingQuest(dailyQuest);
-              }}
-              className={`px-4 py-2 rounded-full font-bold text-xs transition active:scale-95 ${
-                completedQuestIds.includes(dailyQuest.id)
-                  ? 'bg-teal-soft text-teal'
-                  : 'bg-vermilion text-white shadow-[0_3px_0_rgba(0,0,0,0.12)]'
-              }`}
-            >
-              {completedQuestIds.includes(dailyQuest.id) ? 'Done ✓' : 'Start'}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Tabs: Available / Completed */}
+      {/* Tabs: Bookmarked / Completed */}
       <div className="flex rounded-full bg-card p-1 border border-line">
         <button
           onClick={() => {
             triggerHaptic('light');
-            setActiveTab('available');
+            setActiveTab('bookmarked');
           }}
           className={`flex-1 py-2 text-xs font-bold rounded-full transition ${
-            activeTab === 'available' ? 'bg-ink text-wall' : 'text-muted hover:text-ink'
+            activeTab === 'bookmarked' ? 'bg-ink text-wall' : 'text-muted hover:text-ink'
           }`}
         >
-          Open ({quests.length - completedQuestIds.length})
+          Bookmarked ({bookmarkedQuestIds.length})
         </button>
         <button
           onClick={() => {
@@ -137,6 +98,7 @@ export const QuestsView: React.FC = () => {
           displayedQuests.map((quest) => {
             const venue = venues.find((v) => v.id === quest.venueId);
             const isCompleted = completedQuestIds.includes(quest.id);
+            const isBookmarked = bookmarkedQuestIds.includes(quest.id);
 
             return (
               <div key={quest.id} className={`ticket rounded-3xl border border-line shadow-sm ${isCompleted ? 'opacity-80' : ''}`}>
@@ -160,16 +122,32 @@ export const QuestsView: React.FC = () => {
                       </div>
                     </div>
 
-                    {isCompleted ? (
-                      <span className="w-8 h-8 rounded-full bg-teal text-white flex items-center justify-center font-bold text-xs shrink-0">
-                        <Check className="w-4 h-4 stroke-[3]" />
-                      </span>
-                    ) : (
-                      <div className="text-right shrink-0">
-                        <div className="text-sm font-bold text-vermilion font-mono">+{quest.pointsReward} pts</div>
-                        <div className="text-[10px] text-muted font-mono">+{quest.xpReward} XP</div>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {isCompleted ? (
+                        <span className="w-8 h-8 rounded-full bg-teal text-white flex items-center justify-center shrink-0">
+                          <Check className="w-4 h-4 stroke-[3]" />
+                        </span>
+                      ) : (
+                        <div className="text-right">
+                          <div className="text-sm font-bold text-vermilion font-mono">+{quest.pointsReward} pts</div>
+                          <div className="text-[10px] text-muted font-mono">+{quest.xpReward} XP</div>
+                        </div>
+                      )}
+                      <button
+                        onClick={() => {
+                          triggerHaptic('light');
+                          toggleBookmarkQuest(quest.id);
+                        }}
+                        aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark quest'}
+                        className={`w-8 h-8 rounded-full border flex items-center justify-center transition active:scale-90 ${
+                          isBookmarked
+                            ? 'bg-gold-soft border-gold text-[#8A6A10]'
+                            : 'bg-wall border-line text-muted hover:text-ink'
+                        }`}
+                      >
+                        <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-gold text-gold' : ''}`} />
+                      </button>
+                    </div>
                   </div>
 
                   <p className="text-xs text-muted leading-relaxed">{quest.description}</p>
@@ -209,14 +187,16 @@ export const QuestsView: React.FC = () => {
             );
           })
         ) : (
-          <div className="py-12 text-center text-muted text-xs">
-            {activeTab === 'available'
-              ? 'All quests complete! Check the map for more venues.'
-              : 'No completed quests yet. Start one from the Quests tab or the map.'}
+          <div className="py-12 px-6 text-center">
+            <Sparkles className="w-6 h-6 text-muted mx-auto mb-2" />
+            <p className="text-xs text-muted leading-relaxed">
+              {activeTab === 'bookmarked'
+                ? 'Nothing bookmarked yet. Open a venue on the map and tap the bookmark on a quest to save it here.'
+                : 'Nothing completed yet. Start a quest from a venue or the featured challenge on Home.'}
+            </p>
           </div>
         )}
       </div>
-
     </div>
   );
 };

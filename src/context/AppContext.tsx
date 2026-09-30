@@ -29,7 +29,7 @@ interface AppContextType {
   completedQuestIds: string[];
   collectedCardIds: string[];
   redeemedVouchers: RedeemedVoucher[];
-  startedQuestIds: string[];
+  bookmarkedQuestIds: string[];
   bookings: Booking[];
   userLocation: { lat: number; lng: number };
   isSimulatingLocation: boolean;
@@ -54,7 +54,7 @@ interface AppContextType {
   // Gameplay Actions
   checkInVenue: (venueId: string, method: 'gps' | 'qr') => { success: boolean; message: string; points?: number };
   bookVisit: (venueId: string, details: { date: string; time: string; tickets: number }) => void;
-  markQuestStarted: (questId: string) => void;
+  toggleBookmarkQuest: (questId: string) => void;
   completeQuest: (questId: string) => void;
   redeemReward: (rewardId: string) => { success: boolean; message: string; voucher?: RedeemedVoucher };
   markVoucherUsed: (voucherId: string) => void;
@@ -93,8 +93,6 @@ const DEFAULT_USER: UserProfile = {
   xp: 140,
   xpToNextLevel: 250,
   points: 340, // Enough for an instant voucher demo after one quest
-  streak: 4,
-  streakFreezeTokens: 1,
   interests: ['Art', 'History', 'Science'],
   title: 'Gallery Wanderer',
   stepsWalked: 4820,
@@ -181,9 +179,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return [];
   });
 
-  const [startedQuestIds, setStartedQuestIds] = useState<string[]>(() => {
+  const [bookmarkedQuestIds, setBookmarkedQuestIds] = useState<string[]>(() => {
     try {
-      const saved = localStorage.getItem(`${STORAGE_KEY}_started_quests`);
+      const saved = localStorage.getItem(`${STORAGE_KEY}_bookmarked_quests`);
       if (saved) return JSON.parse(saved);
     } catch {
       // ignore
@@ -242,12 +240,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       localStorage.setItem(`${STORAGE_KEY}_completed_quests`, JSON.stringify(completedQuestIds));
       localStorage.setItem(`${STORAGE_KEY}_collected_cards`, JSON.stringify(collectedCardIds));
       localStorage.setItem(`${STORAGE_KEY}_vouchers`, JSON.stringify(redeemedVouchers));
-      localStorage.setItem(`${STORAGE_KEY}_started_quests`, JSON.stringify(startedQuestIds));
+      localStorage.setItem(`${STORAGE_KEY}_bookmarked_quests`, JSON.stringify(bookmarkedQuestIds));
       localStorage.setItem(`${STORAGE_KEY}_bookings`, JSON.stringify(bookings));
     } catch {
       // ignore
     }
-  }, [visitedVenueIds, completedQuestIds, collectedCardIds, redeemedVouchers, startedQuestIds, bookings]);
+  }, [visitedVenueIds, completedQuestIds, collectedCardIds, redeemedVouchers, bookmarkedQuestIds, bookings]);
 
   // Request browser geolocation once if not in simulation mode
   useEffect(() => {
@@ -424,9 +422,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
-  // Remember that a quest was opened, so Home can say "Continue your hunt"
-  const markQuestStarted = (questId: string) => {
-    setStartedQuestIds(prev => (prev.includes(questId) ? prev : [...prev, questId]));
+  const toggleBookmarkQuest = (questId: string) => {
+    setBookmarkedQuestIds(prev =>
+      prev.includes(questId) ? prev.filter(id => id !== questId) : [...prev, questId]
+    );
   };
 
   // Complete a quest — rewards are one-time only; replays just close.
@@ -562,7 +561,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.removeItem(`${STORAGE_KEY}_completed_quests`);
     localStorage.removeItem(`${STORAGE_KEY}_collected_cards`);
     localStorage.removeItem(`${STORAGE_KEY}_vouchers`);
-    localStorage.removeItem(`${STORAGE_KEY}_started_quests`);
+    localStorage.removeItem(`${STORAGE_KEY}_bookmarked_quests`);
     localStorage.removeItem(`${STORAGE_KEY}_bookings`);
 
     setUser({
@@ -573,7 +572,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCompletedQuestIds([]);
     setCollectedCardIds(['card-whipple-astrolabe']);
     setRedeemedVouchers([]);
-    setStartedQuestIds([]);
+    setBookmarkedQuestIds([]);
     setBookings([]);
     resetUserLocation();
   };
@@ -634,7 +633,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         completedQuestIds,
         collectedCardIds,
         redeemedVouchers,
-        startedQuestIds,
+        bookmarkedQuestIds,
         bookings,
         userLocation,
         isSimulatingLocation,
@@ -655,7 +654,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setPartnerMode,
         checkInVenue,
         bookVisit,
-        markQuestStarted,
+        toggleBookmarkQuest,
         completeQuest,
         redeemReward,
         markVoucherUsed,
