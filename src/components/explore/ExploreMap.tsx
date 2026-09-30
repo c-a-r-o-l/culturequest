@@ -163,21 +163,18 @@ export const ExploreMap: React.FC = () => {
         })}
       </div>
 
-      {/* Adjust-where-you-are pill (demo teleport) */}
-      <div className="absolute top-14 right-3 z-40">
+      {/* Floating controls — above the bottom nav */}
+      <div className="absolute right-3 bottom-24 z-40 flex flex-col gap-2">
         <button
           onClick={() => setShowSimNotice((prev) => !prev)}
-          className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-[11px] font-bold shadow-[0_2px_8px_rgba(0,0,0,0.25)] active:scale-95 transition ${
-            isSimulatingLocation ? 'bg-vermilion text-white' : 'bg-white text-ink border border-line'
+          title="Adjust where you are"
+          className={`w-10 h-10 rounded-2xl border flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.2)] active:scale-95 transition ${
+            isSimulatingLocation ? 'bg-vermilion text-white border-vermilion' : 'bg-white border-line text-muted'
           }`}
         >
-          <Navigation className="w-3.5 h-3.5" />
-          <span>Adjust where you are</span>
+          <Navigation className="w-4 h-4" />
         </button>
-      </div>
 
-      {/* Recenter control */}
-      <div className="absolute right-3 bottom-6 z-40">
         <button
           onClick={handleRecenter}
           title="Recenter on me"

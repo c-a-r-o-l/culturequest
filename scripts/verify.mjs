@@ -57,7 +57,15 @@ const pointsText = async (page) =>
   check('leaflet map container present', await page.locator('.leaflet-container').isVisible());
   check('no radar pulse animation', (await page.locator('.animate-radar').count()) === 0);
   check('no +/- zoom control', (await page.locator('.leaflet-control-zoom').count()) === 0);
-  check('adjust-where-you-are pill present', await page.getByRole('button', { name: 'Adjust where you are' }).isVisible());
+  const adjBtn = page.getByRole('button', { name: 'Adjust where you are' });
+  check('adjust-where-you-are button present', await adjBtn.isVisible());
+  const adjBox = await adjBtn.boundingBox();
+  const navBox = await page.locator('nav').boundingBox();
+  check(
+    'adjust-where-you-are button sits above the bottom nav',
+    adjBox && navBox && adjBox.y + adjBox.height <= navBox.y + 2,
+    adjBox && navBox ? `button bottom ${Math.round(adjBox.y + adjBox.height)} vs nav top ${Math.round(navBox.y)}` : ''
+  );
   const allPins = await page.locator('.cq-pin-wrap').count();
   check('8 venue pins on the map', allPins === 8, `${allPins} pins`);
   await page.getByRole('button', { name: 'Museums' }).click();
